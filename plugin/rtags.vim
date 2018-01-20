@@ -17,8 +17,6 @@ else
     finish
 end
 
-
-
 if !exists("g:rtagsRcCmd")
     let g:rtagsRcCmd = "rc"
 endif
@@ -60,7 +58,8 @@ endif
 if g:rtagsAutoLaunchRdm
     call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
-        call system(g:rtagsRdmCmd." --daemon > /dev/null")
+        " call system(g:rtagsRdmCmd." --daemon > /dev/null")
+        call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
     end
 end
 
@@ -81,8 +80,12 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rj :call rtags#JumpTo(g:SAME_WINDOW)<CR>
     noremap <Leader>rJ :call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
     noremap <Leader>rS :call rtags#JumpTo(g:H_SPLIT)<CR>
+    " add rH for Horizontal split
+    noremap <Leader>rH :call rtags#JumpTo(g:H_SPLIT)<CR>
     noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
     noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB)<CR>
+    " add rt for new tab
+    noremap <Leader>rt :call rtags#JumpTo(g:NEW_TAB)<CR>
     noremap <Leader>rp :call rtags#JumpToParent()<CR>
     noremap <Leader>rf :call rtags#FindRefs()<CR>
     noremap <Leader>rF :call rtags#FindRefsCallTree()<CR>
@@ -153,6 +156,9 @@ function! rtags#ExecuteRC(args)
             let cmd .= " ".value
         endif
     endfor
+
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort"'
+    let cmd = cmd2
 
     let output = system(cmd)
     if v:shell_error && len(output) > 0
@@ -281,6 +287,12 @@ endfunction
 "
 function! rtags#DisplayLocations(locations)
     let num_of_locations = len(a:locations)
+    " mck
+    if num_of_locations == 0
+        echohl | echomsg "[vim-rtags] No info returned" | echohl None
+        return
+    endif
+    " mck
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
         if num_of_locations > 0
@@ -292,6 +304,9 @@ function! rtags#DisplayLocations(locations)
             exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap
         endif
     endif
+    " let w:quickfix_title=<something>
+    " clear cmdline to signify rtags func is complete
+    echohl | echomsg "" | echohl None
 endfunction
 
 "
@@ -438,6 +453,9 @@ function! rtags#SymbolInfoHandler(output)
 endfunction
 
 function! rtags#SymbolInfo()
+    let rtagscmdmsg = '[vim-rtags] FindSymbolInfo: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
 endfunction
 
@@ -511,6 +529,9 @@ function! rtags#JumpTo(open_opt, ...)
     endif
 
     call extend(args, { '-f' : rtags#getCurrentLocation() })
+    let rtagscmdmsg = '[vim-rtags] JumpTo: '. expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt }]])
 
 endfunction
@@ -531,6 +552,17 @@ endfunction
 function! rtags#saveLocation()
     let [lnum, col] = getpos('.')[1:2]
     call rtags#pushToStack([expand("%"), lnum, col])
+"   let jump_file = expand("%")
+"   if len(g:rtagsJumpStack) > 0
+"       let [old_file, olnum, ocol] = get(g:rtagsJumpStack, -1)
+"       if old_file == jump_file && olnum == lnum && ocol == col
+"           "echo "skipping dup entry on jump stack"
+"       else
+"           call rtags#pushToStack([jump_file, lnum, col])
+"       endif
+"   else
+"       call rtags#pushToStack([jump_file, lnum, col])
+"   endif
 endfunction
 
 function! rtags#pushToStack(location)
@@ -544,6 +576,16 @@ endfunction
 function! rtags#JumpBack()
     if len(g:rtagsJumpStack) > 0
         let [jump_file, lnum, col] = remove(g:rtagsJumpStack, -1)
+        call rtags#jumpToLocationInternal(jump_file, lnum, col)
+    else
+        "echo "rtags: jump stack is empty"
+        execute "normal" "\<C-o>"
+    endif
+endfunction
+
+function! rtags#JumpBackSave()
+    if len(g:rtagsJumpStack) > 0
+        let [jump_file, lnum, col] = get(g:rtagsJumpStack, -1)
         call rtags#jumpToLocationInternal(jump_file, lnum, col)
     else
         echo "rtags: jump stack is empty"
@@ -578,6 +620,9 @@ function! rtags#JumpToParent(...)
                 \ '-U' : rtags#getCurrentLocation(),
                 \ '--symbol-info-include-parents' : '' }
 
+    let rtagscmdmsg = '[vim-rtags] JumpToParent: '. expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')])
 endfunction
 
@@ -663,6 +708,9 @@ function! rtags#ExecuteRCAsync(args, handlers)
         endif
     endfor
 
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort"'
+    let cmd = cmd2
+
     let s:callbacks = {
                 \ 'on_exit' : function('rtags#HandleResults')
                 \ }
@@ -686,20 +734,23 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let s:jobs[channel] = s:job_cid
         let s:result_handlers[channel] = a:handlers
     endif
-
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
-
-
     if a:event == 'vim_stdout'
-        call add(s:result_stdout[a:job_id], a:data)
+        if !exists('s:result_stdout[a:job_id]')
+          sleep 500m
+        endif
+        if exists('s:result_stdout[a:job_id]')
+          call add(s:result_stdout[a:job_id], a:data)
+        else
+          let l:errmsg = "rtags#HandleResults() stdout ERR"
+          echohl | echomsg errmsg | echohl None
+        endif
     elseif a:event == 'vim_exit'
-
         let job_cid = remove(s:jobs, a:job_id)
         let handlers = remove(s:result_handlers, a:job_id)
         let output = remove(s:result_stdout, a:job_id)
-
         call rtags#ExecuteHandlers(output, handlers)
     else
         let job_cid = remove(s:jobs, a:job_id)
@@ -709,7 +760,6 @@ function! rtags#HandleResults(job_id, data, event)
         call rtags#ExecuteHandlers(output, handlers)
         execute 'silent !rm -f ' . temp_file
     endif
-
 endfunction
 
 function! rtags#ExecuteHandlers(output, handlers)
@@ -744,6 +794,9 @@ function! rtags#FindRefs()
                 \ '-e' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let rtagscmdmsg = '[vim-rtags] FindRefs: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -752,15 +805,24 @@ function! rtags#FindRefsCallTree()
                 \ '--containing-function-location' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewReferences')])
 endfunction
 
 function! rtags#FindSuperClasses()
+    let g:rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
                 \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')])
 endfunction
 
 function! rtags#FindSubClasses()
+    let g:rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
                 \ function('rtags#ExtractSubClasses'),
                 \ function('rtags#DisplayResults')])
@@ -771,6 +833,9 @@ function! rtags#FindVirtuals()
                 \ '-k' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -780,6 +845,9 @@ function! rtags#FindRefsByName(name)
                 \ '-e' : '',
                 \ '-R' : a:name }
 
+    let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -791,6 +859,9 @@ function! rtags#IFindRefsByName(name)
                 \ '-R' : a:name,
                 \ '-I' : '' }
 
+    let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -803,10 +874,17 @@ endfunction
 
 """ rc -HF <pattern>
 function! rtags#FindSymbols(pattern)
+    if empty(a:pattern)
+        echo "<empty input>"
+        return
+    endif
     let args = {
                 \ '-a' : '',
                 \ '-F' : a:pattern }
 
+    let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -820,11 +898,18 @@ endfunction
 
 " case insensitive FindSymbol
 function! rtags#IFindSymbols(pattern)
+    if empty(a:pattern)
+        echo "<empty input>"
+        return
+    endif
     let args = {
                 \ '-a' : '',
                 \ '-I' : '',
                 \ '-F' : a:pattern }
 
+    let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
 
@@ -846,14 +931,26 @@ function! rtags#ProjectList()
 endfunction
 
 function! rtags#ProjectOpen(pattern)
+    if empty(a:pattern)
+        echo "<empty input>"
+        return
+    endif
     call rtags#ExecuteThen({ '-w' : a:pattern }, [])
 endfunction
 
 function! rtags#LoadCompilationDb(pattern)
+    if empty(a:pattern)
+        echo "<empty input>"
+        return
+    endif
     call rtags#ExecuteThen({ '-J' : a:pattern }, [])
 endfunction
 
 function! rtags#ProjectClose(pattern)
+    if empty(a:pattern)
+        echo "<empty input>"
+        return
+    endif
     call rtags#ExecuteThen({ '-u' : a:pattern }, [])
 endfunction
 

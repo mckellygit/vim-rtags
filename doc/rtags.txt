@@ -1,4 +1,5 @@
 *vim-rtags* VIM bindings for RTags, C/C++ code indexer.
+*rtags.txt* VIM bindings for RTags, C/C++ code indexer.
 
 CONTENTS                                                        *rtags-contents*
 
