@@ -739,7 +739,7 @@ endfunction
 function! rtags#HandleResults(job_id, data, event)
     if a:event == 'vim_stdout'
         if !exists('s:result_stdout[a:job_id]')
-          sleep 500m
+          sleep 551m
         endif
         if exists('s:result_stdout[a:job_id]')
           call add(s:result_stdout[a:job_id], a:data)
