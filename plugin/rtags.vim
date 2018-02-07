@@ -498,6 +498,8 @@ function! rtags#JumpToHandler(results, args)
 
     if len(results) > 1
         call rtags#DisplayResults(results)
+    elseif len(results) == 1 && results[0] == "Not indexed"
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
         let [location; symbol_detail] = split(results[0], '\s\+')
         let [jump_file, lnum, col; rest] = split(location, ':')
