@@ -509,6 +509,8 @@ function! rtags#JumpToHandler(results, args)
         if rtags#jumpToLocation(jump_file, lnum, col)
             normal! zz
         endif
+    else
+        echohl ErrorMsg | echomsg "[vim-rtags] failed to jump - cannot follow symbol" | echohl None
     endif
 
 endfunction
