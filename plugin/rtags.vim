@@ -886,7 +886,7 @@ function! rtags#FindSymbols(pattern)
                 \ '-a' : '',
                 \ '-F' : a:pattern }
 
-    let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
     echohl | echomsg rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
