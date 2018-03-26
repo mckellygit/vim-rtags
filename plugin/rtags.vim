@@ -17,6 +17,8 @@ else
     finish
 end
 
+
+
 if !exists("g:rtagsRcCmd")
     let g:rtagsRcCmd = "rc"
 endif
@@ -58,7 +60,7 @@ endif
 if g:rtagsAutoLaunchRdm
     call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
-        " call system(g:rtagsRdmCmd." --daemon > /dev/null")
+       "call system(g:rtagsRdmCmd." --daemon > /dev/null")
         call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
     end
 end
@@ -722,7 +724,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
     let s:job_cid = s:job_cid + 1
     " should have out+err redirection portable for various shells.
     if has('nvim')
-        let cmd = cmd . '>& ' . rtags#TempFile(s:job_cid)
+        let cmd = cmd . ' >' . rtags#TempFile(s:job_cid) . ' 2>&1'
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
@@ -738,9 +740,12 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let s:jobs[channel] = s:job_cid
         let s:result_handlers[channel] = a:handlers
     endif
+
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
+
+
     if a:event == 'vim_stdout'
         if !exists('s:result_stdout[a:job_id]')
           sleep 551m
@@ -752,9 +757,11 @@ function! rtags#HandleResults(job_id, data, event)
           echohl | echomsg errmsg | echohl None
         endif
     elseif a:event == 'vim_exit'
+
         let job_cid = remove(s:jobs, a:job_id)
         let handlers = remove(s:result_handlers, a:job_id)
         let output = remove(s:result_stdout, a:job_id)
+
         call rtags#ExecuteHandlers(output, handlers)
     else
         let job_cid = remove(s:jobs, a:job_id)
@@ -764,6 +771,7 @@ function! rtags#HandleResults(job_id, data, event)
         call rtags#ExecuteHandlers(output, handlers)
         execute 'silent !rm -f ' . temp_file
     endif
+
 endfunction
 
 function! rtags#ExecuteHandlers(output, handlers)
