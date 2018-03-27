@@ -159,7 +159,7 @@ function! rtags#ExecuteRC(args)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -1000"'
     let cmd = cmd2
 
     let output = system(cmd)
@@ -289,12 +289,10 @@ endfunction
 "
 function! rtags#DisplayLocations(locations)
     let num_of_locations = len(a:locations)
-    " mck
     if num_of_locations == 0
         echohl | echomsg "[vim-rtags] No info returned" | echohl None
         return
     endif
-    " mck
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
         if num_of_locations > 0
@@ -714,7 +712,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -1000"'
     let cmd = cmd2
 
     let s:callbacks = {
@@ -747,6 +745,7 @@ function! rtags#HandleResults(job_id, data, event)
 
 
     if a:event == 'vim_stdout'
+       "call add(s:result_stdout[a:job_id], a:data)
         if !exists('s:result_stdout[a:job_id]')
           sleep 551m
         endif
