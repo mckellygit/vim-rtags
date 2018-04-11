@@ -187,6 +187,11 @@ function! rtags#ParseResults(results)
     let locations = []
     let nr = 1
     for record in a:results
+        " mck - ?
+        if len(split(record, '\s\+')) == 0
+            continue
+        endif
+        " mck - ?
         let [location; rest] = split(record, '\s\+')
         let [file, lnum, col] = rtags#parseSourceLocation(location)
 
