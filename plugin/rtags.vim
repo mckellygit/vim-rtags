@@ -458,10 +458,14 @@ function! rtags#SymbolInfoHandler(output)
 endfunction
 
 function! rtags#SymbolInfo()
-    let rtagscmdmsg = '[vim-rtags] FindSymbolInfo: ' . expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . expand("<cword>")
     echohl | echomsg rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
+    "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
+    " mck - async does not work yet
+    let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() })
+    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')])
+    " mck
 endfunction
 
 function! rtags#cloneCurrentBuffer(type)
@@ -943,7 +947,11 @@ function! rtags#ProjectListHandler(output)
 endfunction
 
 function! rtags#ProjectList()
-    call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')])
+    "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')])
+    " mck - async does not work yet
+    let result = rtags#ExecuteRC({ '-w' : '' })
+    call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')])
+    " mck
 endfunction
 
 function! rtags#ProjectOpen(pattern)
