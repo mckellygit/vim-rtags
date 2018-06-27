@@ -969,7 +969,8 @@ function! rtags#ProjectOpen(pattern)
         echo "<empty input>"
         return
     endif
-    call rtags#ExecuteThen({ '-w' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-w' : a:pattern }, [])
+    call rtags#ExecuteRC({ '-w' : a:pattern })
 endfunction
 
 function! rtags#LoadCompilationDb(pattern)
@@ -977,7 +978,8 @@ function! rtags#LoadCompilationDb(pattern)
         echo "<empty input>"
         return
     endif
-    call rtags#ExecuteThen({ '-J' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-J' : a:pattern }, [])
+    call rtags#ExecuteRC({ '-J' : a:pattern })
 endfunction
 
 function! rtags#ProjectClose(pattern)
@@ -985,7 +987,8 @@ function! rtags#ProjectClose(pattern)
         echo "<empty input>"
         return
     endif
-    call rtags#ExecuteThen({ '-u' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-u' : a:pattern }, [])
+    call rtags#ExecuteRC({ '-u' : a:pattern })
 endfunction
 
 function! rtags#PreprocessFileHandler(result)
