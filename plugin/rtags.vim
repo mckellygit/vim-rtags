@@ -57,6 +57,10 @@ if !exists("g:rtagsMaxSearchResultWindowHeight")
     let g:rtagsMaxSearchResultWindowHeight = 10
 endif
 
+if !exists("g:rtagsAutoReindexOnWrite")
+    let g:rtagsAutoReindexOnWrite = 0
+endif
+
 if g:rtagsAutoLaunchRdm
     call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
@@ -1252,4 +1256,11 @@ command! -nargs=1 -complete=dir RtagsLoadCompilationDb call rtags#LoadCompilatio
 
 " The most commonly used find operation
 command! -nargs=1 -complete=customlist,rtags#CompleteSymbols Rtag RtagsIFindSymbols <q-args>
+
+function! rtags#CheckReindexFile()
+    if g:rtagsAutoReindexOnWrite ==# 1
+        call rtags#ReindexFile()
+    endif
+endfunction
+autocmd Filetype c,cpp autocmd BufWritePost,FileWritePost,FileAppendPost <buffer> call rtags#CheckReindexFile()
 
