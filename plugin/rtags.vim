@@ -102,6 +102,7 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rw :call rtags#RenameSymbolUnderCursor()<CR>
     noremap <Leader>rv :call rtags#FindVirtuals()<CR>
     noremap <Leader>rb :call rtags#JumpBack()<CR>
+    noremap <Leader>rh :call rtags#ShowHierarchy()<CR>
     noremap <Leader>rC :call rtags#FindSuperClasses()<CR>
     noremap <Leader>rc :call rtags#FindSubClasses()<CR>
     noremap <Leader>rd :call rtags#Diagnostics()<CR>
@@ -452,6 +453,57 @@ function! rtags#AddReferences(results, rnum)
     setlocal nomodifiable
     exec (":" . ln)
 endfunction
+
+" Creates a viewer for hierarachy results
+"
+" param[in] results - List of class hierarchy
+"
+" Hierarchy references have format: <type> <name> <file>:<line>:<col>: <text>
+"
+function! rtags#ViewHierarchy(results)
+    let cmd = g:rtagsMaxSearchResultWindowHeight . "new Hierarchy"
+    silent execute cmd
+    setlocal noswapfile
+    setlocal buftype=nowrite
+    setlocal bufhidden=delete
+    setlocal nowrap
+    setlocal tw=0
+
+    iabc <buffer>
+
+    setlocal modifiable
+    silent normal ggdG
+    for record in a:results
+        silent execute "normal! A\<cr>\<esc>i".record."\<esc>"
+    endfor
+    silent normal ggdd
+    setlocal nomodifiable
+
+    let cpo_save = &cpo
+    set cpo&vim
+    nnoremap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
+    let &cpo = cpo_save
+endfunction
+
+"
+" Opens the location on the current line.
+"
+" Hierarchy references have format: <type> <name> <file>:<line>:<col>: <text>
+"
+function! s:OpenHierarchyLocation() " <<<
+    let ln = line(".")
+    let l = getline(ln)
+    if l[0] == ' '
+        let [type, name, location; rest] = split(l, '\s\+')
+        let [jump_file, lnum, col; rest] = split(location, ':')
+        wincmd j
+        " Add location to the jumplist
+        normal m'
+        if rtags#jumpToLocation(jump_file, lnum, col)
+            normal zz
+        endif
+    endif
+endfunction " >>>
 
 function! rtags#getRcCmd()
     let cmd = g:rtagsRcCmd
@@ -832,6 +884,15 @@ function! rtags#FindRefs()
     echohl | echomsg rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+endfunction
+
+function! rtags#ShowHierarchy()
+    let args = {'--class-hierarchy' : rtags#getCurrentLocation() }
+
+    let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . expand("<cword>")
+    echohl | echomsg rtagscmdmsg | echohl None
+    call rtags#saveLocation()
+    call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')])
 endfunction
 
 function! rtags#FindRefsCallTree()
