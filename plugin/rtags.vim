@@ -314,9 +314,10 @@ function! rtags#DisplayLocations(locations)
             exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap
         endif
     endif
+    " mck clear cmdline to signify rtags func is complete
     " let w:quickfix_title=<something>
-    " clear cmdline to signify rtags func is complete
-    echohl | echomsg "" | echohl None
+    " echohl | echomsg "" | echohl None
+    redraw!
 endfunction
 
 "
@@ -521,6 +522,8 @@ endfunction
 
 function! rtags#SymbolInfoHandler(output)
     echo join(a:output, "\n")
+    " mck
+    redraw!
 endfunction
 
 function! rtags#SymbolInfo()
@@ -907,7 +910,7 @@ function! rtags#FindRefsCallTree()
 endfunction
 
 function! rtags#FindSuperClasses()
-    let g:rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
     echohl | echomsg rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
@@ -915,7 +918,7 @@ function! rtags#FindSuperClasses()
 endfunction
 
 function! rtags#FindSubClasses()
-    let g:rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
     echohl | echomsg rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
@@ -1066,7 +1069,20 @@ function! rtags#PreprocessFile()
 endfunction
 
 function! rtags#ReindexFile()
-    call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
+    redraw!
+    if &filetype ==# 'qf'
+        return
+    elseif &buftype ==# 'terminal'
+        return
+    elseif !&buflisted
+        return
+    endif
+    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%p")
+    echohl | echomsg rtagscmdmsg | echohl None
+    " mck call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
+    call rtags#ExecuteRC({ '-V' : expand("%:p") })
+    sleep 551m
+    redraw!
 endfunction
 
 function! rtags#FindSymbolsOfWordUnderCursor()
