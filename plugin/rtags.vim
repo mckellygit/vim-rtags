@@ -1077,11 +1077,14 @@ function! rtags#ReindexFile()
     elseif !&buflisted
         return
     endif
-    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%p")
+    let rifile = expand("%:p")
+    if rifile ==# ''
+        return
+    endif
+    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%")
     echohl | echomsg rtagscmdmsg | echohl None
     " mck call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
-    sleep 551m
     redraw!
 endfunction
 
