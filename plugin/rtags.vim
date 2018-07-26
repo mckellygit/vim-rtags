@@ -97,7 +97,7 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rF :call rtags#FindRefsCallTree()<CR>
     noremap <Leader>rn :call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rs :call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rr :call rtags#ReindexFile()<CR>
+    noremap <Leader>rr :call rtags#ReindexFile(1)<CR>
     noremap <Leader>rl :call rtags#ProjectList()<CR>
     noremap <Leader>rw :call rtags#RenameSymbolUnderCursor()<CR>
     noremap <Leader>rv :call rtags#FindVirtuals()<CR>
@@ -528,7 +528,7 @@ endfunction
 
 function! rtags#SymbolInfo()
     let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
     " mck - async does not work yet
@@ -612,7 +612,7 @@ function! rtags#JumpTo(open_opt, ...)
 
     call extend(args, { '-f' : rtags#getCurrentLocation() })
     let rtagscmdmsg = '[vim-rtags] JumpTo: '. expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt }]])
 
@@ -703,7 +703,7 @@ function! rtags#JumpToParent(...)
                 \ '--symbol-info-include-parents' : '' }
 
     let rtagscmdmsg = '[vim-rtags] JumpToParent: '. expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')])
 endfunction
@@ -884,7 +884,7 @@ function! rtags#FindRefs()
                 \ '-r' : rtags#getCurrentLocation() }
 
     let rtagscmdmsg = '[vim-rtags] FindRefs: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -893,7 +893,7 @@ function! rtags#ShowHierarchy()
     let args = {'--class-hierarchy' : rtags#getCurrentLocation() }
 
     let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')])
 endfunction
@@ -904,14 +904,14 @@ function! rtags#FindRefsCallTree()
                 \ '-r' : rtags#getCurrentLocation() }
 
     let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewReferences')])
 endfunction
 
 function! rtags#FindSuperClasses()
     let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
                 \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')])
@@ -919,7 +919,7 @@ endfunction
 
 function! rtags#FindSubClasses()
     let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
                 \ function('rtags#ExtractSubClasses'),
@@ -932,7 +932,7 @@ function! rtags#FindVirtuals()
                 \ '-r' : rtags#getCurrentLocation() }
 
     let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -944,7 +944,7 @@ function! rtags#FindRefsByName(name)
                 \ '-R' : a:name }
 
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -958,7 +958,7 @@ function! rtags#IFindRefsByName(name)
                 \ '-I' : '' }
 
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -981,7 +981,7 @@ function! rtags#FindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1006,7 +1006,7 @@ function! rtags#IFindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1068,7 +1068,7 @@ function! rtags#PreprocessFile()
     call rtags#ExecuteThen({ '-E' : expand("%:p") }, [function('rtags#PreprocessFileHandler')])
 endfunction
 
-function! rtags#ReindexFile()
+function! rtags#ReindexFile(arg)
     redraw!
     if &filetype ==# 'qf'
         return
@@ -1082,9 +1082,12 @@ function! rtags#ReindexFile()
         return
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%")
-    echohl | echomsg rtagscmdmsg | echohl None
+    echohl | echo rtagscmdmsg | echohl None
     " mck call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
+    if a:arg ==# 1
+        sleep 551m
+    endif
     redraw!
 endfunction
 
@@ -1339,7 +1342,7 @@ command! -nargs=1 -complete=customlist,rtags#CompleteSymbols Rtag RtagsIFindSymb
 
 function! rtags#CheckReindexFile()
     if g:rtagsAutoReindexOnWrite ==# 1
-        call rtags#ReindexFile()
+        call rtags#ReindexFile(0)
     endif
 endfunction
 autocmd Filetype c,cpp autocmd BufWritePost,FileWritePost,FileAppendPost <buffer> call rtags#CheckReindexFile()
