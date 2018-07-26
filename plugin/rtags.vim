@@ -484,6 +484,8 @@ function! rtags#ViewHierarchy(results)
     set cpo&vim
     nnoremap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
     let &cpo = cpo_save
+    " mck
+    redraw!
 endfunction
 
 "
@@ -974,6 +976,8 @@ endfunction
 function! rtags#FindSymbols(pattern)
     if empty(a:pattern)
         echo "<empty input>"
+        sleep 551m
+        redraw!
         return
     endif
     let args = {
@@ -998,6 +1002,8 @@ endfunction
 function! rtags#IFindSymbols(pattern)
     if empty(a:pattern)
         echo "<empty input>"
+        sleep 551m
+        redraw!
         return
     endif
     let args = {
@@ -1035,6 +1041,8 @@ endfunction
 function! rtags#ProjectOpen(pattern)
     if empty(a:pattern)
         echo "<empty input>"
+        sleep 551m
+        redraw!
         return
     endif
     "call rtags#ExecuteThen({ '-w' : a:pattern }, [])
@@ -1044,6 +1052,8 @@ endfunction
 function! rtags#LoadCompilationDb(pattern)
     if empty(a:pattern)
         echo "<empty input>"
+        sleep 551m
+        redraw!
         return
     endif
     "call rtags#ExecuteThen({ '-J' : a:pattern }, [])
@@ -1053,6 +1063,8 @@ endfunction
 function! rtags#ProjectClose(pattern)
     if empty(a:pattern)
         echo "<empty input>"
+        sleep 551m
+        redraw!
         return
     endif
     "call rtags#ExecuteThen({ '-u' : a:pattern }, [])
@@ -1078,7 +1090,7 @@ function! rtags#ReindexFile(arg)
         return
     endif
     let rifile = expand("%:p")
-    if rifile ==# ''
+    if empty(rifile)
         return
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%")
