@@ -946,6 +946,7 @@ function! rtags#FindRefsByName(name)
                 \ '-R' : a:name }
 
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
+    redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
@@ -960,6 +961,7 @@ function! rtags#IFindRefsByName(name)
                 \ '-I' : '' }
 
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
+    redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
@@ -985,6 +987,7 @@ function! rtags#FindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
+    redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
@@ -1012,6 +1015,7 @@ function! rtags#IFindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
+    redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
