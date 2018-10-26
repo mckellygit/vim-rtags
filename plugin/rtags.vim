@@ -560,6 +560,8 @@ function! rtags#jumpToLocationInternal(file, line, col)
             exe "e ".a:file
         endif
         call cursor(a:line, a:col)
+        " mck clear cmdline to signify rtags func is complete
+        redraw!
         return 1
     catch /.*/
         echohl ErrorMsg
@@ -590,7 +592,7 @@ function! rtags#JumpToHandler(results, args)
             normal! zz
         endif
     else
-        echohl ErrorMsg | echomsg "[vim-rtags] failed to jump - cannot follow symbol" | echohl None
+        echohl ErrorMsg | echomsg "[vim-rtags] no JumpTo info" | echohl None
     endif
 
 endfunction
