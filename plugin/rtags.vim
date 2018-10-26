@@ -592,7 +592,7 @@ function! rtags#JumpToHandler(results, args)
             normal! zz
         endif
     else
-        echohl ErrorMsg | echomsg "[vim-rtags] no JumpTo info" | echohl None
+        echohl ErrorMsg | echomsg "[vim-rtags] no additional JumpTo info found" | echohl None
     endif
 
 endfunction
