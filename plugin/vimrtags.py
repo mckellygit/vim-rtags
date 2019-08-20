@@ -6,9 +6,14 @@ import os
 import sys
 import tempfile
 
+import getpass
+user=getpass.getuser()
+
 import logging
 tempdir = tempfile.gettempdir()
-logging.basicConfig(filename='%s/vim-rtags-python.log' % tempdir,level=logging.DEBUG)
+logfname= tempdir + '/vim-rtags-python-' + user + '.log'
+#logging.basicConfig(filename='%s/vim-rtags-python.log' % tempdir,level=logging.DEBUG)
+logging.basicConfig(filename='%s' % logfname,level=logging.DEBUG)
 
 def get_identifier_beginning():
     line = vim.eval('s:line')

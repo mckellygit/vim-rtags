@@ -17,7 +17,7 @@ else
     finish
 end
 
-
+set mfd=5000
 
 if !exists("g:rtagsRcCmd")
     let g:rtagsRcCmd = "rc"
@@ -65,7 +65,8 @@ if g:rtagsAutoLaunchRdm
     call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
        "call system(g:rtagsRdmCmd." --daemon > /dev/null")
-        call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
+       "call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
+        call system(g:rtagsRdmCmd." --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
     end
 end
 
@@ -127,6 +128,7 @@ call rtags#InitPython()
 """
 function! rtags#Log(message)
     if exists("g:rtagsLog")
+        call setfperm(g:rtagsLog,"rw-rw-rw-")
         call writefile([string(a:message)], g:rtagsLog, "a")
     endif
 endfunction
@@ -164,7 +166,7 @@ function! rtags#ExecuteRC(args)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -1000"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -n 100"'
     let cmd = cmd2
 
     let output = system(cmd)
@@ -794,7 +796,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -1000"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -n 100"'
     let cmd = cmd2
 
     let s:callbacks = {
