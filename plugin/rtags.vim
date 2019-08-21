@@ -127,9 +127,11 @@ call rtags#InitPython()
 " Logging routine
 """
 function! rtags#Log(message)
+    let g:loglock = 1
     if exists("g:rtagsLog")
-        call setfperm(g:rtagsLog,"rw-rw-rw-")
+        lockvar g:loglock
         call writefile([string(a:message)], g:rtagsLog, "a")
+        unlockvar g:loglock
     endif
 endfunction
 
