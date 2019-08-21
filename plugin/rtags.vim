@@ -127,11 +127,9 @@ call rtags#InitPython()
 " Logging routine
 """
 function! rtags#Log(message)
-    let g:loglock = 1
     if exists("g:rtagsLog")
-        lockvar g:loglock
+        "mck do we use a mutex here ?
         call writefile([string(a:message)], g:rtagsLog, "a")
-        unlockvar g:loglock
     endif
 endfunction
 
