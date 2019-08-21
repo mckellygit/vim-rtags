@@ -128,7 +128,6 @@ call rtags#InitPython()
 """
 function! rtags#Log(message)
     if exists("g:rtagsLog")
-        "mck do we use a mutex here ?
         call writefile([string(a:message)], g:rtagsLog, "a")
     endif
 endfunction
