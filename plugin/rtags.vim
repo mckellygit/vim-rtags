@@ -61,6 +61,10 @@ if !exists("g:rtagsAutoReindexOnWrite")
     let g:rtagsAutoReindexOnWrite = 0
 endif
 
+if !exists("g:rtagsUseColonKeyword")
+    let g:rtagsUseColonKeyword = 0
+endif
+
 if g:rtagsAutoLaunchRdm
     call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
@@ -530,7 +534,12 @@ function! rtags#SymbolInfoHandler(output)
 endfunction
 
 function! rtags#SymbolInfo()
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
@@ -616,7 +625,12 @@ function! rtags#JumpTo(open_opt, ...)
     endif
 
     call extend(args, { '-f' : rtags#getCurrentLocation() })
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] JumpTo: '. expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt }]])
@@ -707,7 +721,12 @@ function! rtags#JumpToParent(...)
                 \ '-U' : rtags#getCurrentLocation(),
                 \ '--symbol-info-include-parents' : '' }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] JumpToParent: '. expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')])
@@ -888,7 +907,12 @@ function! rtags#FindRefs()
                 \ '-e' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindRefs: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
@@ -897,7 +921,12 @@ endfunction
 function! rtags#ShowHierarchy()
     let args = {'--class-hierarchy' : rtags#getCurrentLocation() }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')])
@@ -908,14 +937,24 @@ function! rtags#FindRefsCallTree()
                 \ '--containing-function-location' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewReferences')])
 endfunction
 
 function! rtags#FindSuperClasses()
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
@@ -923,7 +962,12 @@ function! rtags#FindSuperClasses()
 endfunction
 
 function! rtags#FindSubClasses()
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
@@ -936,7 +980,12 @@ function! rtags#FindVirtuals()
                 \ '-k' : '',
                 \ '-r' : rtags#getCurrentLocation() }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
@@ -948,7 +997,12 @@ function! rtags#FindRefsByName(name)
                 \ '-e' : '',
                 \ '-R' : a:name }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -963,7 +1017,12 @@ function! rtags#IFindRefsByName(name)
                 \ '-R' : a:name,
                 \ '-I' : '' }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -973,7 +1032,12 @@ endfunction
 " Find all those references which has the name which is equal to the word
 " under the cursor
 function! rtags#FindRefsOfWordUnderCursor()
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let wordUnderCursor = expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     call rtags#FindRefsByName(wordUnderCursor)
 endfunction
 
@@ -1017,7 +1081,12 @@ function! rtags#IFindSymbols(pattern)
                 \ '-I' : '',
                 \ '-F' : a:pattern }
 
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     redraw!
     echohl | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -1111,7 +1180,12 @@ function! rtags#ReindexFile(arg)
 endfunction
 
 function! rtags#FindSymbolsOfWordUnderCursor()
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let wordUnderCursor = expand("<cword>")
+    let &iskeyword = l:oldiskeyword
     call rtags#FindSymbols(wordUnderCursor)
 endfunction
 
