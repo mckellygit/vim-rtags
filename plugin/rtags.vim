@@ -529,8 +529,7 @@ endfunction
 
 function! rtags#SymbolInfoHandler(output)
     echo join(a:output, "\n")
-    " mck
-    redraw!
+    " mck - dont redraw! here, want prompt to continue ...
 endfunction
 
 function! rtags#SymbolInfo()
