@@ -78,12 +78,14 @@ let g:SAME_WINDOW = 'same_window'
 let g:H_SPLIT = 'hsplit'
 let g:V_SPLIT = 'vsplit'
 let g:NEW_TAB = 'tab'
+let g:NEW_TAB_IF_DIFF_FILE = 'new_tab_if_diff_file'
 
 let s:LOC_OPEN_OPTS = {
             \ g:SAME_WINDOW : '',
             \ g:H_SPLIT : ' ',
             \ g:V_SPLIT : 'vert',
-            \ g:NEW_TAB : 'tab'
+            \ g:NEW_TAB : 'tab',
+            \ g:NEW_TAB_IF_DIFF_FILE : '  '
             \ }
 
 if g:rtagsUseDefaultMappings == 1
@@ -94,7 +96,7 @@ if g:rtagsUseDefaultMappings == 1
     " add rH for Horizontal split
     noremap <Leader>rH :call rtags#JumpTo(g:H_SPLIT)<CR>
     noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
-    noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB)<CR>
+    noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
     " add rt for new tab
     noremap <Leader>rt :call rtags#JumpTo(g:NEW_TAB)<CR>
     noremap <Leader>rp :call rtags#JumpToParent()<CR>
@@ -583,17 +585,20 @@ endfunction
 function! rtags#JumpToHandler(results, args)
     let results = a:results
     let open_opt = a:args['open_opt']
-    if len(results) >= 0 && open_opt != g:SAME_WINDOW
-        call rtags#cloneCurrentBuffer(open_opt)
-    endif
 
     if len(results) > 1
         call rtags#DisplayResults(results)
-    elseif len(results) == 1 && results[0] == "Not indexed"
+    elseif len(results) == 1 && results[0] =~ '^Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
         let [location; symbol_detail] = split(results[0], '\s\+')
         let [jump_file, lnum, col; rest] = split(location, ':')
+
+        " mck - new tab if different file
+        if !((open_opt == g:SAME_WINDOW) || (open_opt == g:NEW_TAB_IF_DIFF_FILE && jump_file ==# expand("%:p")))
+            call rtags#cloneCurrentBuffer(open_opt)
+        endif
+        " mck - new tab if different file
 
         " Add location to the jumplist
         normal! m'
@@ -614,6 +619,7 @@ endfunction
 "       * g:H_SPLIT
 "       * g:V_SPLIT
 "       * g:NEW_TAB
+"       * g:NEW_TAB_IF_DIFF_FILE
 "
 "     a:1 - dictionary of additional arguments for 'rc'
 "
@@ -651,8 +657,8 @@ endfunction
 
 function! rtags#saveLocation()
     let [lnum, col] = getpos('.')[1:2]
-    call rtags#pushToStack([expand("%"), lnum, col])
-"   let jump_file = expand("%")
+    call rtags#pushToStack([expand("%:p"), lnum, col])
+"   let jump_file = expand("%:p")
 "   if len(g:rtagsJumpStack) > 0
 "       let [old_file, olnum, ocol] = get(g:rtagsJumpStack, -1)
 "       if old_file == jump_file && olnum == lnum && ocol == col
@@ -1168,7 +1174,7 @@ function! rtags#ReindexFile(arg)
     if empty(rifile)
         return
     endif
-    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%")
+    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
     echohl | echo rtagscmdmsg | echohl None
     " mck call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
