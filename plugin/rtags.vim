@@ -85,7 +85,7 @@ let s:LOC_OPEN_OPTS = {
             \ g:H_SPLIT : ' ',
             \ g:V_SPLIT : 'vert',
             \ g:NEW_TAB : 'tab',
-            \ g:NEW_TAB_IF_DIFF_FILE : '  '
+            \ g:NEW_TAB_IF_DIFF_FILE : 'tab'
             \ }
 
 if g:rtagsUseDefaultMappings == 1
