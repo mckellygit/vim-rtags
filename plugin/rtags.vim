@@ -93,12 +93,13 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rj :call rtags#JumpTo(g:SAME_WINDOW)<CR>
     noremap <Leader>rJ :call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
     noremap <Leader>rS :call rtags#JumpTo(g:H_SPLIT)<CR>
-    " add rH for Horizontal split
+    " mck - add rH for Horizontal split
     noremap <Leader>rH :call rtags#JumpTo(g:H_SPLIT)<CR>
     noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
-    noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
-    " add rt for new tab
-    noremap <Leader>rt :call rtags#JumpTo(g:NEW_TAB)<CR>
+    " mck - really a tab split if same file
+    noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB)<CR>
+    " mck - add rt for new tab if diff file
+    noremap <Leader>rt :call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
     noremap <Leader>rp :call rtags#JumpToParent()<CR>
     noremap <Leader>rf :call rtags#FindRefs()<CR>
     noremap <Leader>rF :call rtags#FindRefsCallTree()<CR>
