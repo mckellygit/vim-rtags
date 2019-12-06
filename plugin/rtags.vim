@@ -85,7 +85,7 @@ let s:LOC_OPEN_OPTS = {
             \ g:H_SPLIT : ' ',
             \ g:V_SPLIT : 'vert',
             \ g:NEW_TAB : 'tab',
-            \ g:NEW_TAB_IF_DIFF_FILE : '  '
+            \ g:NEW_TAB_IF_DIFF_FILE : 'tab'
             \ }
 
 if g:rtagsUseDefaultMappings == 1
@@ -321,9 +321,9 @@ function! rtags#DisplayLocations(locations)
             exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap
         endif
     endif
-    " mck clear cmdline to signify rtags func is complete
-    " let w:quickfix_title=<something>
-    " echohl | echomsg "" | echohl None
+    " mck - clear cmdline to signify rtags func is complete
+    "let w:quickfix_title=<something>
+    "echohl | echomsg "" | echohl None
     redraw!
 endfunction
 
@@ -556,6 +556,7 @@ function! rtags#cloneCurrentBuffer(type)
     endif
 
     let [lnum, col] = getpos('.')[1:2]
+    " mck - do we want %:p here ?
     exec s:LOC_OPEN_OPTS[a:type]." new ".expand("%")
     call cursor(lnum, col)
 endfunction
@@ -571,7 +572,7 @@ function! rtags#jumpToLocationInternal(file, line, col)
             exe "e ".a:file
         endif
         call cursor(a:line, a:col)
-        " mck clear cmdline to signify rtags func is complete
+        " mck - clear cmdline to signify rtags func is complete
         redraw!
         return 1
     catch /.*/
@@ -594,11 +595,15 @@ function! rtags#JumpToHandler(results, args)
         let [location; symbol_detail] = split(results[0], '\s\+')
         let [jump_file, lnum, col; rest] = split(location, ':')
 
-        " mck - new tab if different file
+        " mck - new tab if different file and tab split if same file and want new tab
         if !((open_opt == g:SAME_WINDOW) || (open_opt == g:NEW_TAB_IF_DIFF_FILE && jump_file ==# expand("%:p")))
-            call rtags#cloneCurrentBuffer(open_opt)
+            if open_opt == g:NEW_TAB && jump_file ==# expand("%:p")
+                exec "tab split"
+            else
+                call rtags#cloneCurrentBuffer(open_opt)
+            endif
         endif
-        " mck - new tab if different file
+        " mck - new tab if different file and tab split if same file and want new tab
 
         " Add location to the jumplist
         normal! m'
@@ -1176,7 +1181,8 @@ function! rtags#ReindexFile(arg)
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
     echohl | echo rtagscmdmsg | echohl None
-    " mck call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
+    "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
+    " mck - async does not work yet
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
     if a:arg ==# 1
         sleep 551m
