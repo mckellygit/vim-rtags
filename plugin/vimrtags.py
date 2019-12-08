@@ -151,7 +151,7 @@ def display_locations(errors, buffer):
 
 def display_diagnostics_results(data, buffer):
     data = json.loads(data)
-    logging.debug(data)
+    # mck logging.debug(data)
 
     check_style = data['checkStyle']
     vim.command('sign unplace *')
