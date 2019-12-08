@@ -5,6 +5,7 @@ import io
 import os
 import sys
 import tempfile
+import re
 
 import getpass
 user=getpass.getuser()
@@ -145,6 +146,9 @@ def display_locations(errors, buffer):
         vim.eval('setqflist(%s)' % error_data)
         vim.command('copen %d' % height)
 
+    # mck - clear cmdline to show cmd has completed
+    vim.command('redraw!')
+
 def display_diagnostics_results(data, buffer):
     data = json.loads(data)
     logging.debug(data)
@@ -195,7 +199,14 @@ def get_diagnostics():
                 cmd += ' --unsaved-file=%s:%d' % (filename, len(content))
 
             content = run_rc_command(cmd, content)
-            if content == None:
+
+            # mck - check for file not indexed
+            chkstring = '%s is not indexed' % filename
+            if re.match(chkstring, content):
+                cmd = 'echohl ErrorMsg | echomsg \'[vim-rtags] Current file is not indexed!\' | echohl None'
+                vim.command(cmd)
+                return None
+            elif content == None:
                 return None
 
             display_diagnostics_results(content, buffer)
