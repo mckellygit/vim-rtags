@@ -250,6 +250,10 @@ endfunction
 " src/Bas.h:47:7: class Bas {
 "
 function! rtags#ExtractSuperClasses(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let extracted = []
     for line in a:results
         if line == "Superclasses:"
@@ -285,6 +289,10 @@ endfunction
 " src/Foo3.h:56:7: class Foo3 : public Foo {
 "
 function! rtags#ExtractSubClasses(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let extracted = []
     let atSubClasses = 0
     for line in a:results
@@ -478,6 +486,10 @@ endfunction
 " Hierarchy references have format: <type> <name> <file>:<line>:<col>: <text>
 "
 function! rtags#ViewHierarchy(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let cmd = g:rtagsMaxSearchResultWindowHeight . "new Hierarchy"
     silent execute cmd
     setlocal noswapfile
@@ -713,6 +725,10 @@ function! rtags#JumpBackSave()
 endfunction
 
 function! rtags#JumpToParentHandler(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let results = a:results
     for line in results
         let matched = matchend(line, "^Parent: ")
