@@ -250,11 +250,12 @@ endfunction
 " src/Bas.h:47:7: class Bas {
 "
 function! rtags#ExtractSuperClasses(results)
-    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
-        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
-        return
-    endif
     let extracted = []
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        let extLine = 'Not indexed'
+        call add(extracted, extLine)
+        return extracted
+    endif
     for line in a:results
         if line == "Superclasses:"
             continue
@@ -289,11 +290,12 @@ endfunction
 " src/Foo3.h:56:7: class Foo3 : public Foo {
 "
 function! rtags#ExtractSubClasses(results)
-    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
-        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
-        return
-    endif
     let extracted = []
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        let extLine = 'Not indexed'
+        call add(extracted, extLine)
+        return extracted
+    endif
     let atSubClasses = 0
     for line in a:results
         if atSubClasses == 0
@@ -317,6 +319,10 @@ function! rtags#DisplayLocations(locations)
     let num_of_locations = len(a:locations)
     if num_of_locations == 0
         echohl | echomsg "[vim-rtags] No info returned" | echohl None
+        return
+    endif
+    if num_of_locations == 1 && a:locations[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
     endif
     if g:rtagsUseLocationList == 1
