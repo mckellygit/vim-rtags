@@ -181,7 +181,7 @@ function! rtags#ExecuteRC(args)
         echohl ErrorMsg | echomsg "[vim-rtags] Error: " . output | echohl None
         return []
     endif
-    if output =~ '^Not indexed'
+    if output ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return []
     endif
@@ -333,6 +333,10 @@ endfunction
 "
 " Format of each line: <path>,<line>\s<text>
 function! rtags#DisplayResults(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let locations = rtags#ParseResults(a:results)
     call rtags#DisplayLocations(locations)
 endfunction
@@ -344,6 +348,10 @@ endfunction
 "
 " Format of each line: <path>,<line>\s<text>\sfunction: <caller path>
 function! rtags#ViewReferences(results)
+    if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     let cmd = g:rtagsMaxSearchResultWindowHeight . "new References"
     silent execute cmd
     setlocal noswapfile
@@ -590,7 +598,7 @@ function! rtags#JumpToHandler(results, args)
 
     if len(results) > 1
         call rtags#DisplayResults(results)
-    elseif len(results) == 1 && results[0] =~ '^Not indexed'
+    elseif len(results) == 1 && results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
         let [location; symbol_detail] = split(results[0], '\s\+')
