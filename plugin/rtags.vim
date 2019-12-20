@@ -318,7 +318,7 @@ endfunction
 function! rtags#DisplayLocations(locations)
     let num_of_locations = len(a:locations)
     if num_of_locations == 0
-        echohl | echomsg "[vim-rtags] No info returned" | echohl None
+        echohl DiffText | echomsg "[vim-rtags] No additional location info found" | echohl None
         return
     endif
     if num_of_locations == 1 && a:locations[0] ==# 'Not indexed'
@@ -328,17 +328,17 @@ function! rtags#DisplayLocations(locations)
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
         if num_of_locations > 0
-            exe 'lopen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap
+            exe 'lopen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap | :clearjumps
         endif
     else
         call setqflist(a:locations)
         if num_of_locations > 0
-            exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap
+            exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap | :clearjumps
         endif
     endif
     " mck - clear cmdline to signify rtags func is complete
     "let w:quickfix_title=<something>
-    "echohl | echomsg "" | echohl None
+    "echohl None | echomsg "" | echohl None
     redraw!
 endfunction
 
@@ -568,7 +568,7 @@ function! rtags#SymbolInfo()
     endif
     let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
     " mck - async does not work yet
@@ -638,7 +638,7 @@ function! rtags#JumpToHandler(results, args)
             normal! zz
         endif
     else
-        echohl ErrorMsg | echomsg "[vim-rtags] No additional JumpTo info found" | echohl None
+        echohl DiffText | echomsg "[vim-rtags] No additional JumpTo info found" | echohl None
     endif
 
 endfunction
@@ -668,7 +668,7 @@ function! rtags#JumpTo(open_opt, ...)
     endif
     let rtagscmdmsg = '[vim-rtags] JumpTo: '. expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt }]])
 
@@ -768,7 +768,7 @@ function! rtags#JumpToParent(...)
     endif
     let rtagscmdmsg = '[vim-rtags] JumpToParent: '. expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')])
 endfunction
@@ -885,8 +885,6 @@ function! rtags#ExecuteRCAsync(args, handlers)
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
-
-
     if a:event == 'vim_stdout'
        "call add(s:result_stdout[a:job_id], a:data)
         if !exists('s:result_stdout[a:job_id]')
@@ -896,14 +894,12 @@ function! rtags#HandleResults(job_id, data, event)
           call add(s:result_stdout[a:job_id], a:data)
         else
           let l:errmsg = "rtags#HandleResults() stdout ERR"
-          echohl | echomsg errmsg | echohl None
+          echohl DiffDelete | echomsg errmsg | echohl None
         endif
     elseif a:event == 'vim_exit'
-
         let job_cid = remove(s:jobs, a:job_id)
         let handlers = remove(s:result_handlers, a:job_id)
         let output = remove(s:result_stdout, a:job_id)
-
         call rtags#ExecuteHandlers(output, handlers)
     else
         let job_cid = remove(s:jobs, a:job_id)
@@ -913,7 +909,6 @@ function! rtags#HandleResults(job_id, data, event)
         call rtags#ExecuteHandlers(output, handlers)
         execute 'silent !rm -f ' . temp_file
     endif
-
 endfunction
 
 function! rtags#ExecuteHandlers(output, handlers)
@@ -928,6 +923,10 @@ function! rtags#ExecuteHandlers(output, handlers)
                 let result = Handler(result)
             catch /E706/
                 " If we're not returning the right type we're probably done
+                echohl DiffDelete | echomsg "[vim-rtags] ExecuteHandlers Error: E706" | echohl None
+                return
+            catch /E735/
+                echohl DiffText | echomsg "[vim-rtags] No additional location info found [E735]" | echohl None
                 return
             endtry
         endif
@@ -954,7 +953,7 @@ function! rtags#FindRefs()
     endif
     let rtagscmdmsg = '[vim-rtags] FindRefs: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -968,7 +967,7 @@ function! rtags#ShowHierarchy()
     endif
     let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')])
 endfunction
@@ -984,7 +983,7 @@ function! rtags#FindRefsCallTree()
     endif
     let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#ViewReferences')])
 endfunction
@@ -996,7 +995,7 @@ function! rtags#FindSuperClasses()
     endif
     let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
                 \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')])
@@ -1009,7 +1008,7 @@ function! rtags#FindSubClasses()
     endif
     let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
                 \ function('rtags#ExtractSubClasses'),
@@ -1027,7 +1026,7 @@ function! rtags#FindVirtuals()
     endif
     let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1045,7 +1044,7 @@ function! rtags#FindRefsByName(name)
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
     redraw!
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1065,7 +1064,7 @@ function! rtags#IFindRefsByName(name)
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
     redraw!
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1096,7 +1095,7 @@ function! rtags#FindSymbols(pattern)
 
     let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
     redraw!
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1129,7 +1128,7 @@ function! rtags#IFindSymbols(pattern)
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
     let &iskeyword = l:oldiskeyword
     redraw!
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
 endfunction
@@ -1211,7 +1210,7 @@ function! rtags#ReindexFile(arg)
         return
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
-    echohl | echo rtagscmdmsg | echohl None
+    echohl Comment | echo rtagscmdmsg | echohl None
     "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
     " mck - async does not work yet
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
