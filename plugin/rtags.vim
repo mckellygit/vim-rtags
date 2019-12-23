@@ -324,9 +324,11 @@ function! rtags#DisplayLocations(locations)
         echohl DiffText | echomsg "[vim-rtags] No additional location info found" | echohl None
         return
     endif
-    if num_of_locations == 1 && a:locations[0] ==# 'Not indexed'
-        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
-        return
+    if num_of_locations == 1
+        if get(a:locations, 0, 'Not indexed') ==# 'Not indexed'
+            echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+            return
+        endif
     endif
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
@@ -952,10 +954,12 @@ function! rtags#ExecuteHandlers(output, handlers)
                 " If we're not returning the right type we're probably done
                 echohl WarningMsg
                 echomsg "[vim-rtags] ExecuteHandlers Error:"
+                echomsg v:exception
+                echomsg v:thorpoint
+                echohl None
                 for record in a:output
                     echomsg record
                 endfor
-                echohl None
                 return
             endtry
         endif
