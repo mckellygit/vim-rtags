@@ -325,8 +325,13 @@ function! rtags#DisplayLocations(locations)
         return
     endif
     if num_of_locations == 1
-        if get(a:locations, 0, 'Not indexed') ==# 'Not indexed'
-            echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        " dict: [{'lnum': '', 'vcol': 0, 'col': '', 'filename': '', 'type': 'ref', 'text': '', 'filepath': ''}]
+        let lnum = a:locations[0].lnum
+        let lcol = a:locations[0].col
+        let lfile = a:locations[0].filename
+        let ltext = a:locations[0].text
+        if empty(lnum) && empty(lcol) && empty(lfile) && empty(ltext)
+            echohl WarningMsg | echomsg "[vim-rtags] No location info returned" | echohl None
             return
         endif
     endif
@@ -955,7 +960,7 @@ function! rtags#ExecuteHandlers(output, handlers)
                 echohl WarningMsg
                 echomsg "[vim-rtags] ExecuteHandlers Error:"
                 echomsg v:exception
-                echomsg v:thorpoint
+                echomsg v:throwpoint
                 echohl None
                 for record in a:output
                     echomsg record
