@@ -17,6 +17,9 @@ else
     finish
 end
 
+" DEBUG job/channel override
+"let s:rtagsAsync = 0
+
 set mfd=5000
 
 if !exists("g:rtagsRcCmd")
@@ -172,7 +175,7 @@ function! rtags#ExecuteRC(args)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -n 100"'
+    let cmd2 = '/bin/bash -c ("' . cmd . ' | sort | head -n 500) 2>&1"'
     let cmd = cmd2
 
     let output = system(cmd)
@@ -689,18 +692,18 @@ endfunction
 
 function! rtags#saveLocation()
     let [lnum, col] = getpos('.')[1:2]
-    call rtags#pushToStack([expand("%:p"), lnum, col])
-"   let jump_file = expand("%:p")
-"   if len(g:rtagsJumpStack) > 0
-"       let [old_file, olnum, ocol] = get(g:rtagsJumpStack, -1)
-"       if old_file == jump_file && olnum == lnum && ocol == col
-"           "echo "skipping dup entry on jump stack"
-"       else
-"           call rtags#pushToStack([jump_file, lnum, col])
-"       endif
-"   else
-"       call rtags#pushToStack([jump_file, lnum, col])
-"   endif
+"   call rtags#pushToStack([expand("%:p"), lnum, col])
+    let jump_file = expand("%:p")
+    if len(g:rtagsJumpStack) > 0
+        let [old_file, olnum, ocol] = get(g:rtagsJumpStack, -1)
+        if old_file == jump_file && olnum == lnum && ocol == col
+            "echo "skipping dup entry on jump stack"
+        else
+            call rtags#pushToStack([jump_file, lnum, col])
+        endif
+    else
+        call rtags#pushToStack([jump_file, lnum, col])
+    endif
 endfunction
 
 function! rtags#pushToStack(location)
@@ -855,33 +858,57 @@ function! rtags#ExecuteRCAsync(args, handlers)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' | sort | head -n 100"'
+    let cmd2 = '/bin/bash -c ("' . cmd . ' | sort | head -n 500) 2>&1"'
     let cmd = cmd2
-
-    let s:callbacks = {
-                \ 'on_exit' : function('rtags#HandleResults')
-                \ }
 
     let s:job_cid = s:job_cid + 1
     " should have out+err redirection portable for various shells.
+
     if has('nvim')
+
+        let s:callbacks = {
+            \ 'on_exit' : function('rtags#HandleResults')
+            \ }
         let cmd = cmd . ' >' . rtags#TempFile(s:job_cid) . ' 2>&1'
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
+
     elseif has('job') && has('channel')
-        let l:opts = {}
-        let l:opts.mode = 'nl'
-        let l:opts.out_cb = {ch, data -> rtags#HandleResults(ch_info(ch).id, data, 'vim_stdout')}
-        let l:opts.exit_cb = {ch, data -> rtags#HandleResults(ch_info(ch).id, data,'vim_exit')}
-        let l:opts.stoponexit = 'kill'
-        let job = job_start(cmd, l:opts)
-        let channel = ch_info(job_getchannel(job)).id
-        let s:result_stdout[channel] = []
-        let s:jobs[channel] = s:job_cid
-        let s:result_handlers[channel] = a:handlers
+
+        " mck - vim 8+ job/channel method
+
+        "let l:opts = {}
+        "let l:opts.mode = 'nl'
+        "let l:opts.out_cb = {ch, data -> rtags#HandleResults(ch_info(ch).id, data, 'vim_stdout')}
+        "let l:opts.exit_cb = {ch, data -> rtags#HandleResults(ch_info(ch).id, data,'vim_exit')}
+        "let l:opts.stoponexit = 'kill'
+        "let job = job_start(cmd, l:opts)
+        "let channel = ch_info(job_getchannel(job)).id
+        "let s:result_stdout[channel] = []
+        "let s:jobs[channel] = s:job_cid
+        "let s:result_handlers[channel] = a:handlers
+
+        let job = job_start(cmd, { 'out_mode':'nl' , 'stoponexit':'kill' , 'close_cb':'rtags#CloseCallback' })
+        let channel = job_getchannel(job)
+        let ch = ch_info(channel).id
+        let s:jobs[ch] = s:job_cid
+        let s:result_handlers[ch] = a:handlers
+
     endif
 
+endfunction
+
+" mck - vim 8+ job/channel method
+function! rtags#CloseCallback(channel) abort
+        let ch = ch_info(a:channel).id
+        let job_cid = remove(s:jobs, ch)
+        let handlers = remove(s:result_handlers, ch)
+        let output = []
+        while ch_status(a:channel, { 'part':'out' }) == 'buffered'
+            call add(output, ch_read(a:channel))
+        endwhile
+        call rtags#ExecuteHandlers(output, handlers)
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
@@ -921,12 +948,14 @@ function! rtags#ExecuteHandlers(output, handlers)
         else
             try
                 let result = Handler(result)
-            catch /E706/
+            catch /E*/
                 " If we're not returning the right type we're probably done
-                echohl DiffDelete | echomsg "[vim-rtags] ExecuteHandlers Error: E706" | echohl None
-                return
-            catch /E735/
-                echohl DiffText | echomsg "[vim-rtags] No additional location info found [E735]" | echohl None
+                echohl WarningMsg
+                echomsg "[vim-rtags] ExecuteHandlers Error:"
+                for record in a:output
+                    echomsg record
+                endfor
+                echohl None
                 return
             endtry
         endif
