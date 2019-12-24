@@ -322,9 +322,12 @@ endfunction
 function! rtags#DisplayLocations(locations, args)
     let num_of_locations = len(a:locations)
     if num_of_locations == 0
-        let linfo = get(a:args, '-F', '<unable to determine symbol>')
-        " or perhaps get location from -r, -f, -U key ...
-        echohl DiffDelete | echomsg "[vim-rtags] No loc info returned for: " . linfo | echohl None
+        if type(a:args) == 1
+            let symbol = a:args
+        elseif type(a:args) == 3 || type(a:args) == 4
+            let symbol = get(a:args, 'symbol', '<unable to determine symbol>')
+        endif
+        echohl DiffDelete | echomsg "[vim-rtags] No loc info returned for: " . symbol | echohl None
         return
     endif
     if num_of_locations == 1
@@ -334,9 +337,12 @@ function! rtags#DisplayLocations(locations, args)
         let lfile = a:locations[0].filename
         let ltext = a:locations[0].text
         if empty(lnum) && empty(lcol) && empty(lfile) && empty(ltext)
-            let linfo = get(a:args, '-F', '<unable to determine symbol>')
-            " or perhaps get location from -r, -f, -U key ...
-            echohl DiffDelete | echomsg "[vim-rtags] Invalid loc info returned for: " . linfo | echohl None
+            if type(a:args) == 1
+                let symbol = a:args
+            elseif type(a:args) == 3 || type(a:args) == 4
+                let symbol = get(a:args, 'symbol', '<unable to determine symbol>')
+            endif
+            echohl DiffDelete | echomsg "[vim-rtags] Invalid loc info returned for: " . symbol | echohl None
             return
         endif
     endif
@@ -421,7 +427,8 @@ function! s:ExpandReferences() " <<<
         let args = {
                 \ '--containing-function-location' : '',
                 \ '-r' : location }
-        call rtags#ExecuteThen(args, [[function('rtags#AddReferences'), rnum]])
+        let symbol = 'ExpandReferences' " TODO
+        call rtags#ExecuteThen(args, [[function('rtags#AddReferences'), rnum]], symbol)
     endif
 endfunction " >>>
 
@@ -586,11 +593,10 @@ function! rtags#SymbolInfo()
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
+    "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')], symbol)
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() })
-    let args = { '-F' : symbol }
-    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], args)
+    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], symbol)
     " mck
 endfunction
 
@@ -630,6 +636,7 @@ endfunction
 function! rtags#JumpToHandler(results, args)
     let results = a:results
     let open_opt = a:args['open_opt']
+    let symbol = a:args['symbol']
 
     if len(results) > 1
         call rtags#DisplayResults(results, args)
@@ -655,12 +662,10 @@ function! rtags#JumpToHandler(results, args)
             normal! zz
         endif
     else
-        " we didnt move so this should still be correct
-        let linfo = expand("<cword>")
-        if empty(linfo)
-            let linfo = '<unable to determine symbol>'
+        if empty(symbol)
+            let symbol = '<unable to determine symbol>'
         endif
-        echohl DiffText | echomsg "[vim-rtags] No addl loc info found for: " . linfo | echohl None
+        echohl DiffText | echomsg "[vim-rtags] No addl loc info found for: " . symbol | echohl None
     endif
 
 endfunction
@@ -688,11 +693,12 @@ function! rtags#JumpTo(open_opt, ...)
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] JumpTo: '. expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] JumpTo: '. symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt }]])
+    let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt, 'symbol' : symbol }]], symbol)
 
 endfunction
 
@@ -788,11 +794,12 @@ function! rtags#JumpToParent(...)
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] JumpToParent: '. expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] JumpToParent: '. symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')])
+    call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')], symbol)
 endfunction
 
 function! s:GetCharacterUnderCursor()
@@ -843,14 +850,15 @@ function! rtags#RenameSymbolUnderCursor()
                 \ '-r' : rtags#getCurrentLocation(),
                 \ '--rename' : '' }
 
-    call rtags#ExecuteThen(args, [function('rtags#RenameSymbolUnderCursorHandler')])
+    let symbol = expand("<cword>")
+    call rtags#ExecuteThen(args, [function('rtags#RenameSymbolUnderCursorHandler')], symbol)
 endfunction
 
 function! rtags#TempFile(job_cid)
     return '/tmp/neovim_async_rtags.tmp.' . getpid() . '.' . a:job_cid
 endfunction
 
-function! rtags#ExecuteRCAsync(args, handlers)
+function! rtags#ExecuteRCAsync(args, handlers, symbol)
     let cmd = rtags#getRcCmd()
 
     " Give rdm unsaved file content, so that you don't have to save files
@@ -892,7 +900,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
-        let s:job_args[ch] = a:args
+        let s:job_args[ch] = a:symbol
 
     elseif has('job') && has('channel')
 
@@ -914,7 +922,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let ch = ch_info(channel).id
         let s:jobs[ch] = s:job_cid
         let s:result_handlers[ch] = a:handlers
-        let s:job_args[ch] = a:args
+        let s:job_args[ch] = a:symbol
 
     endif
 
@@ -925,12 +933,12 @@ function! rtags#CloseCallback(channel) abort
         let ch = ch_info(a:channel).id
         let job_cid = remove(s:jobs, ch)
         let handlers = remove(s:result_handlers, ch)
-        let args = remove(s:job_args, ch)
+        let jb_symbol = remove(s:job_args, ch)
         let output = []
         while ch_status(a:channel, { 'part':'out' }) == 'buffered'
             call add(output, ch_read(a:channel))
         endwhile
-        call rtags#ExecuteHandlers(output, handlers, args)
+        call rtags#ExecuteHandlers(output, handlers, jb_symbol)
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
@@ -950,20 +958,20 @@ function! rtags#HandleResults(job_id, data, event)
         let handlers = remove(s:result_handlers, a:job_id)
         " TODO: mck - probably need to check if any buffered output is present to read in ...
         let output = remove(s:result_stdout, a:job_id)
-        let args = remove(s:job_args, ch)
-        call rtags#ExecuteHandlers(output, handlers, args)
+        let jb_symbol = remove(s:job_args, ch)
+        call rtags#ExecuteHandlers(output, handlers, jb_symbol)
     else
         let job_cid = remove(s:jobs, a:job_id)
         let temp_file = rtags#TempFile(job_cid)
         let output = readfile(temp_file)
         let handlers = remove(s:result_handlers, a:job_id)
-        let args = remove(s:job_args, ch)
-        call rtags#ExecuteHandlers(output, handlers, args)
+        let jb_symbol = remove(s:job_args, ch)
+        call rtags#ExecuteHandlers(output, handlers, jb_symbol)
         execute 'silent !rm -f ' . temp_file
     endif
 endfunction
 
-function! rtags#ExecuteHandlers(output, handlers, args)
+function! rtags#ExecuteHandlers(output, handlers, jb_symbol)
     let result = a:output
     for Handler in a:handlers
         if type(Handler) == 3
@@ -972,7 +980,7 @@ function! rtags#ExecuteHandlers(output, handlers, args)
             call HandlerFunc(result, args)
         else
             try
-                let result = Handler(result, a:args)
+                let result = Handler(result, a:jb_symbol)
             catch /E*/
                 " If we're not returning the right type we're probably done
                 echohl WarningMsg
@@ -989,12 +997,12 @@ function! rtags#ExecuteHandlers(output, handlers, args)
     endfor 
 endfunction
 
-function! rtags#ExecuteThen(args, handlers)
+function! rtags#ExecuteThen(args, handlers, symbol)
     if s:rtagsAsync == 1
-        call rtags#ExecuteRCAsync(a:args, a:handlers)
+        call rtags#ExecuteRCAsync(a:args, a:handlers, a:symbol)
     else
         let result = rtags#ExecuteRC(a:args)
-        call rtags#ExecuteHandlers(result, a:handlers, a:args)
+        call rtags#ExecuteHandlers(result, a:handlers, a:symbol)
     endif
 endfunction
 
@@ -1007,11 +1015,12 @@ function! rtags#FindRefs()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] FindRefs: ' . expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindRefs: ' . symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], symbol)
 endfunction
 
 function! rtags#ShowHierarchy()
@@ -1021,11 +1030,12 @@ function! rtags#ShowHierarchy()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] ShowHierarchy: ' . symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')])
+    call rtags#ExecuteThen(args, [function('rtags#ViewHierarchy')], symbol)
 endfunction
 
 function! rtags#FindRefsCallTree()
@@ -1037,11 +1047,12 @@ function! rtags#FindRefsCallTree()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindRefsCallTree: '. symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#ViewReferences')])
+    call rtags#ExecuteThen(args, [function('rtags#ViewReferences')], symbol)
 endfunction
 
 function! rtags#FindSuperClasses()
@@ -1049,12 +1060,13 @@ function! rtags#FindSuperClasses()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindSuperClasses: '. symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
-                \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')])
+                \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')], symbol)
 endfunction
 
 function! rtags#FindSubClasses()
@@ -1062,13 +1074,14 @@ function! rtags#FindSubClasses()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindSubClasses: ' . symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
                 \ function('rtags#ExtractSubClasses'),
-                \ function('rtags#DisplayResults')])
+                \ function('rtags#DisplayResults')], symbol)
 endfunction
 
 function! rtags#FindVirtuals()
@@ -1080,11 +1093,12 @@ function! rtags#FindVirtuals()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] FindVirtuals: ' . symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], symbol)
 endfunction
 
 function! rtags#FindRefsByName(name)
@@ -1093,16 +1107,11 @@ function! rtags#FindRefsByName(name)
                 \ '-e' : '',
                 \ '-R' : a:name }
 
-    let l:oldiskeyword = &iskeyword
-    if (g:rtagsUseColonKeyword == 1)
-        setlocal iskeyword+=:
-    endif
-    let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . expand("<cword>")
-    let &iskeyword = l:oldiskeyword
+    let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . a:name
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:name)
 endfunction
 
 " case insensitive FindRefsByName
@@ -1113,16 +1122,11 @@ function! rtags#IFindRefsByName(name)
                 \ '-R' : a:name,
                 \ '-I' : '' }
 
-    let l:oldiskeyword = &iskeyword
-    if (g:rtagsUseColonKeyword == 1)
-        setlocal iskeyword+=:
-    endif
-    let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . expand("<cword>")
-    let &iskeyword = l:oldiskeyword
+    let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . a:name
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:name)
 endfunction
 
 " Find all those references which has the name which is equal to the word
@@ -1153,7 +1157,7 @@ function! rtags#FindSymbols(pattern)
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:pattern)
 endfunction
 
 " Method for tab-completion for vim's commands
@@ -1161,7 +1165,7 @@ function! rtags#CompleteSymbols(arg, line, pos)
     if len(a:arg) < g:rtagsMinCharsForCommandCompletion
         return []
     endif
-    call rtags#ExecuteThen({ '-S' : a:arg }, [function('filter')])
+    call rtags#ExecuteThen({ '-S' : a:arg }, [function('filter')], a:pattern)
 endfunction
 
 " case insensitive FindSymbol
@@ -1177,16 +1181,11 @@ function! rtags#IFindSymbols(pattern)
                 \ '-I' : '',
                 \ '-F' : a:pattern }
 
-    let l:oldiskeyword = &iskeyword
-    if (g:rtagsUseColonKeyword == 1)
-        setlocal iskeyword+=:
-    endif
-    let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . expand("<cword>")
-    let &iskeyword = l:oldiskeyword
+    let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . a:pattern
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')])
+    call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:pattern)
 endfunction
 
 function! rtags#ProjectListHandler(output)
@@ -1203,11 +1202,11 @@ function! rtags#ProjectListHandler(output)
 endfunction
 
 function! rtags#ProjectList()
-    "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')])
+    let symbol = 'Project-list'
+    "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')], symbol)
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-w' : '' })
-    let args = { '-F' : 'Project-list' }
-    call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')], args)
+    call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')], symbol)
     " mck
 endfunction
 
@@ -1218,7 +1217,7 @@ function! rtags#ProjectOpen(pattern)
         redraw!
         return
     endif
-    "call rtags#ExecuteThen({ '-w' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-w' : a:pattern }, [], a:pattern)
     call rtags#ExecuteRC({ '-w' : a:pattern })
 endfunction
 
@@ -1229,7 +1228,7 @@ function! rtags#LoadCompilationDb(pattern)
         redraw!
         return
     endif
-    "call rtags#ExecuteThen({ '-J' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-J' : a:pattern }, [], a:pattern)
     call rtags#ExecuteRC({ '-J' : a:pattern })
 endfunction
 
@@ -1240,7 +1239,7 @@ function! rtags#ProjectClose(pattern)
         redraw!
         return
     endif
-    "call rtags#ExecuteThen({ '-u' : a:pattern }, [])
+    "call rtags#ExecuteThen({ '-u' : a:pattern }, [], a:pattern)
     call rtags#ExecuteRC({ '-u' : a:pattern })
 endfunction
 
@@ -1250,7 +1249,8 @@ function! rtags#PreprocessFileHandler(result)
 endfunction
 
 function! rtags#PreprocessFile()
-    call rtags#ExecuteThen({ '-E' : expand("%:p") }, [function('rtags#PreprocessFileHandler')])
+    let symbol = 'PreprocessFile' " TODO
+    call rtags#ExecuteThen({ '-E' : expand("%:p") }, [function('rtags#PreprocessFileHandler')], symbol)
 endfunction
 
 function! rtags#ReindexFile(arg)
@@ -1258,6 +1258,8 @@ function! rtags#ReindexFile(arg)
     if &filetype ==# 'qf'
         return
     elseif &buftype ==# 'terminal'
+        return
+    elseif &buftype ==# 'quickfix'
         return
     elseif !&buflisted
         return
@@ -1268,7 +1270,8 @@ function! rtags#ReindexFile(arg)
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
     echohl Comment | echo rtagscmdmsg | echohl None
-    "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [])
+    let symbol = 'ReindexFile' " TODO
+    "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [], symbol)
     " mck - async does not work yet
     call rtags#ExecuteRC({ '-V' : expand("%:p") })
     if a:arg ==# 1
@@ -1289,6 +1292,9 @@ endfunction
 
 function! rtags#Diagnostics()
     let s:file = expand("%:p")
+    let rtagscmdmsg = '[vim-rtags] run diagnostics'
+    redraw!
+    echohl Comment | echo rtagscmdmsg | echohl None
     return s:Pyeval("vimrtags.get_diagnostics()")
 endfunction
 

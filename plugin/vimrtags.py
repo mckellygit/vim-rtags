@@ -133,6 +133,8 @@ def send_completion_request():
 
 def display_locations(errors, buffer):
     if len(errors) == 0:
+        cmd = 'redraw! | echohl DiffText | echomsg \'[vim-rtags] No diagnostic info available\' | echohl None'
+        vim.command(cmd)
         return
 
     error_data = json.dumps(errors)
@@ -141,10 +143,10 @@ def display_locations(errors, buffer):
 
     if int(get_rtags_variable('UseLocationList')) == 1:
         vim.eval('setloclist(%d, %s)' % (buffer.number, error_data))
-        vim.command('lopen %d' % height)
+        vim.command('lopen %d | set nowrap | clearjumps' % height)
     else:
         vim.eval('setqflist(%s)' % error_data)
-        vim.command('copen %d' % height)
+        vim.command('copen %d | set nowrap | clearjumps' % height)
 
     # mck - clear cmdline to show cmd has completed
     vim.command('redraw!')
@@ -158,6 +160,8 @@ def display_diagnostics_results(data, buffer):
 
     # There are no errors
     if check_style == None:
+        cmd = 'redraw! | echohl DiffText | echomsg \'[vim-rtags] No diagnostic info returned\' | echohl None'
+        vim.command(cmd)
         return
 
     filename, errors = list(check_style.items())[0]
@@ -203,10 +207,12 @@ def get_diagnostics():
             # mck - check for file not indexed
             chkstring = '%s is not indexed' % filename
             if re.match(chkstring, content):
-                cmd = 'echohl ErrorMsg | echomsg \'[vim-rtags] Current file is not indexed!\' | echohl None'
+                cmd = 'redraw! | echohl ErrorMsg | echomsg \'[vim-rtags] Current file is not indexed!\' | echohl None'
                 vim.command(cmd)
                 return None
             elif content == None:
+                cmd = 'redraw! | echohl DiffDelete | echomsg \'[vim-rtags] diagnostic content unavailable\' | echohl None'
+                vim.command(cmd)
                 return None
 
             display_diagnostics_results(content, buffer)
