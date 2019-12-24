@@ -323,7 +323,8 @@ function! rtags#DisplayLocations(locations, args)
     let num_of_locations = len(a:locations)
     if num_of_locations == 0
         let linfo = get(a:args, '-F', '<unable to determine symbol>')
-        echohl DiffDelete | echomsg "[vim-rtags] No location info found for: " . linfo | echohl None
+        " or perhaps get location from -r, -f, -U key ...
+        echohl DiffDelete | echomsg "[vim-rtags] No loc info returned for: " . linfo | echohl None
         return
     endif
     if num_of_locations == 1
@@ -333,7 +334,9 @@ function! rtags#DisplayLocations(locations, args)
         let lfile = a:locations[0].filename
         let ltext = a:locations[0].text
         if empty(lnum) && empty(lcol) && empty(lfile) && empty(ltext)
-            echohl WarningMsg | echomsg "[vim-rtags] No location info returned" | echohl None
+            let linfo = get(a:args, '-F', '<unable to determine symbol>')
+            " or perhaps get location from -r, -f, -U key ...
+            echohl DiffDelete | echomsg "[vim-rtags] Invalid loc info returned for: " . linfo | echohl None
             return
         endif
     endif
@@ -578,14 +581,15 @@ function! rtags#SymbolInfo()
     if (g:rtagsUseColonKeyword == 1)
         setlocal iskeyword+=:
     endif
-    let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . expand("<cword>")
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] SymbolInfo: ' . symbol
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() })
-    let args = { '-F' : a:pattern }
+    let args = { '-F' : symbol }
     call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], args)
     " mck
 endfunction
@@ -651,7 +655,12 @@ function! rtags#JumpToHandler(results, args)
             normal! zz
         endif
     else
-        echohl DiffText | echomsg "[vim-rtags] No additional JumpTo info found" | echohl None
+        " we didnt move so this should still be correct
+        let linfo = expand("<cword>")
+        if empty(linfo)
+            let linfo = '<unable to determine symbol>'
+        endif
+        echohl DiffText | echomsg "[vim-rtags] No addl loc info found for: " . linfo | echohl None
     endif
 
 endfunction
@@ -1197,7 +1206,7 @@ function! rtags#ProjectList()
     "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')])
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-w' : '' })
-    let args = { '-F' : a:pattern }
+    let args = { '-F' : 'Project-list' }
     call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')], args)
     " mck
 endfunction
