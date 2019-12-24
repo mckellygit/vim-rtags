@@ -2,6 +2,7 @@ if has('nvim') || (has('job') && has('channel'))
     let s:rtagsAsync = 1
     let s:job_cid = 0
     let s:jobs = {}
+    let s:job_args = {}
     let s:result_stdout = {}
     let s:result_handlers = {}
 else
@@ -95,7 +96,7 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>ri :call rtags#SymbolInfo()<CR>
     noremap <Leader>rj :call rtags#JumpTo(g:SAME_WINDOW)<CR>
     noremap <Leader>rJ :call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
-    noremap <Leader>rS :call rtags#JumpTo(g:H_SPLIT)<CR>
+    "noremap <Leader>rS :call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - add rH for Horizontal split
     noremap <Leader>rH :call rtags#JumpTo(g:H_SPLIT)<CR>
     noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
@@ -318,10 +319,11 @@ endfunction
 "
 " param[in] locations - List of locations, one per line
 "
-function! rtags#DisplayLocations(locations)
+function! rtags#DisplayLocations(locations, args)
     let num_of_locations = len(a:locations)
     if num_of_locations == 0
-        echohl DiffText | echomsg "[vim-rtags] No additional location info found" | echohl None
+        let linfo = get(a:args, '-F', '<unable to determine symbol>')
+        echohl DiffDelete | echomsg "[vim-rtags] No location info found for: " . linfo | echohl None
         return
     endif
     if num_of_locations == 1
@@ -356,13 +358,13 @@ endfunction
 " param[in] results - List of locations, one per line
 "
 " Format of each line: <path>,<line>\s<text>
-function! rtags#DisplayResults(results)
+function! rtags#DisplayResults(results, args)
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
     endif
     let locations = rtags#ParseResults(a:results)
-    call rtags#DisplayLocations(locations)
+    call rtags#DisplayLocations(locations, a:args)
 endfunction
 
 "
@@ -583,7 +585,8 @@ function! rtags#SymbolInfo()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')])
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() })
-    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')])
+    let args = { '-F' : a:pattern }
+    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], args)
     " mck
 endfunction
 
@@ -594,7 +597,7 @@ function! rtags#cloneCurrentBuffer(type)
 
     let [lnum, col] = getpos('.')[1:2]
     " mck - do we want %:p here ?
-    exec s:LOC_OPEN_OPTS[a:type]." new ".expand("%")
+    exec s:LOC_OPEN_OPTS[a:type]." new ".expand("%:p")
     call cursor(lnum, col)
 endfunction
 
@@ -625,7 +628,7 @@ function! rtags#JumpToHandler(results, args)
     let open_opt = a:args['open_opt']
 
     if len(results) > 1
-        call rtags#DisplayResults(results)
+        call rtags#DisplayResults(results, args)
     elseif len(results) == 1 && results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
@@ -880,6 +883,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
+        let s:job_args[ch] = a:args
 
     elseif has('job') && has('channel')
 
@@ -901,6 +905,7 @@ function! rtags#ExecuteRCAsync(args, handlers)
         let ch = ch_info(channel).id
         let s:jobs[ch] = s:job_cid
         let s:result_handlers[ch] = a:handlers
+        let s:job_args[ch] = a:args
 
     endif
 
@@ -911,11 +916,12 @@ function! rtags#CloseCallback(channel) abort
         let ch = ch_info(a:channel).id
         let job_cid = remove(s:jobs, ch)
         let handlers = remove(s:result_handlers, ch)
+        let args = remove(s:job_args, ch)
         let output = []
         while ch_status(a:channel, { 'part':'out' }) == 'buffered'
             call add(output, ch_read(a:channel))
         endwhile
-        call rtags#ExecuteHandlers(output, handlers)
+        call rtags#ExecuteHandlers(output, handlers, args)
 endfunction
 
 function! rtags#HandleResults(job_id, data, event)
@@ -933,19 +939,22 @@ function! rtags#HandleResults(job_id, data, event)
     elseif a:event == 'vim_exit'
         let job_cid = remove(s:jobs, a:job_id)
         let handlers = remove(s:result_handlers, a:job_id)
+        " TODO: mck - probably need to check if any buffered output is present to read in ...
         let output = remove(s:result_stdout, a:job_id)
-        call rtags#ExecuteHandlers(output, handlers)
+        let args = remove(s:job_args, ch)
+        call rtags#ExecuteHandlers(output, handlers, args)
     else
         let job_cid = remove(s:jobs, a:job_id)
         let temp_file = rtags#TempFile(job_cid)
         let output = readfile(temp_file)
         let handlers = remove(s:result_handlers, a:job_id)
-        call rtags#ExecuteHandlers(output, handlers)
+        let args = remove(s:job_args, ch)
+        call rtags#ExecuteHandlers(output, handlers, args)
         execute 'silent !rm -f ' . temp_file
     endif
 endfunction
 
-function! rtags#ExecuteHandlers(output, handlers)
+function! rtags#ExecuteHandlers(output, handlers, args)
     let result = a:output
     for Handler in a:handlers
         if type(Handler) == 3
@@ -954,7 +963,7 @@ function! rtags#ExecuteHandlers(output, handlers)
             call HandlerFunc(result, args)
         else
             try
-                let result = Handler(result)
+                let result = Handler(result, a:args)
             catch /E*/
                 " If we're not returning the right type we're probably done
                 echohl WarningMsg
@@ -976,7 +985,7 @@ function! rtags#ExecuteThen(args, handlers)
         call rtags#ExecuteRCAsync(a:args, a:handlers)
     else
         let result = rtags#ExecuteRC(a:args)
-        call rtags#ExecuteHandlers(result, a:handlers)
+        call rtags#ExecuteHandlers(result, a:handlers, a:args)
     endif
 endfunction
 
@@ -1188,7 +1197,8 @@ function! rtags#ProjectList()
     "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')])
     " mck - async does not work yet
     let result = rtags#ExecuteRC({ '-w' : '' })
-    call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')])
+    let args = { '-F' : a:pattern }
+    call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')], args)
     " mck
 endfunction
 
