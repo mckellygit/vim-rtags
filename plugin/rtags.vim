@@ -14,7 +14,7 @@ if has('python')
 elseif has('python3')
     let g:rtagsPy = 'python3'
 else
-    echohl ErrorMsg | echomsg "[vim-rtags] Vim is missing python support" | echohl None
+    echohl DiffDelete | echomsg "[vim-rtags] Vim is missing python support" | echohl None
     finish
 end
 
@@ -70,11 +70,11 @@ if !exists("g:rtagsUseColonKeyword")
 endif
 
 if g:rtagsAutoLaunchRdm
-    call system(g:rtagsRcCmd." -w")
+    silent call system(g:rtagsRcCmd." -w")
     if v:shell_error != 0 
-       "call system(g:rtagsRdmCmd." --daemon > /dev/null")
-       "call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
-        call system(g:rtagsRdmCmd." --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
+       "silent call system(g:rtagsRdmCmd." --daemon > /dev/null")
+       "silent call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
+        silent call system(g:rtagsRdmCmd." --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
     end
 end
 
@@ -149,7 +149,7 @@ endfunction
 " param[in] args - dictionary of arguments
 "-
 " return output split by newline
-function! rtags#ExecuteRC(args)
+function! rtags#ExecuteRC(args, cmdinfo)
     let cmd = rtags#getRcCmd()
 
     " Give rdm unsaved file content, so that you don't have to save files
@@ -164,7 +164,7 @@ function! rtags#ExecuteRC(args)
     endif
     if exists('unsaved_content')
         let filename = expand("%:p")
-        let output = system(printf("%s --wait --unsaved-file=%s:%s -V %s", cmd, filename, strlen(unsaved_content), filename), unsaved_content)
+        silent let output = system(printf("%s --wait --unsaved-file=%s:%s -V %s", cmd, filename, strlen(unsaved_content), filename), unsaved_content)
         let b:rtags_sent_content = unsaved_content
     endif
 
@@ -176,19 +176,23 @@ function! rtags#ExecuteRC(args)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c ("' . cmd . ' | sort | head -n 500) 2>&1"'
+    let cmd1 = cmd
+    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
     let cmd = cmd2
 
-    let output = system(cmd)
-    if v:shell_error && len(output) > 0
-        let output = substitute(output, '\n', '', '')
-        echohl ErrorMsg | echomsg "[vim-rtags] Error: " . output | echohl None
+    silent let output = system(cmd)
+    if v:shell_error
+        echohl DiffDelete
+        echomsg "[vim-rtags] Error: " . cmdinfo
+        echomsg cmd1
+        if len(output) > 0
+            let output = substitute(output, '\n', '', '')
+            echomsg output
+        endif
+        echohl None
         return []
     endif
-    if output ==# 'Not indexed'
-        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
-        return []
-    endif
+
     return split(output, '\n\+')
 endfunction
 
@@ -253,7 +257,7 @@ endfunction
 " src/Bar.h:46:7: class Bar : public Bas {
 " src/Bas.h:47:7: class Bas {
 "
-function! rtags#ExtractSuperClasses(results)
+function! rtags#ExtractSuperClasses(results, symbol)
     let extracted = []
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         let extLine = 'Not indexed'
@@ -293,7 +297,7 @@ endfunction
 " src/Foo2.h:56:7: class Foo2 : public Foo {
 " src/Foo3.h:56:7: class Foo3 : public Foo {
 "
-function! rtags#ExtractSubClasses(results)
+function! rtags#ExtractSubClasses(results, symbol)
     let extracted = []
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         let extLine = 'Not indexed'
@@ -578,9 +582,15 @@ function! rtags#getCurrentLocation()
     return printf("%s:%s:%s", expand("%:p"), lnum, col)
 endfunction
 
-function! rtags#SymbolInfoHandler(output)
-    echo join(a:output, "\n")
+function! rtags#SymbolInfoHandler(output, jb_args)
+    let result = join(a:output, "\n")
+    if result ==# 'Not indexed'
+        redraw!
+        echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
+        return
+    endif
     " mck - dont redraw! here, want prompt to continue ...
+    echo result
 endfunction
 
 function! rtags#SymbolInfo()
@@ -595,7 +605,8 @@ function! rtags#SymbolInfo()
     call rtags#saveLocation()
     "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')], symbol)
     " mck - async does not work yet
-    let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() })
+    let cmdinfo = 'SymbolInfo: ' . symbol
+    let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() }, cmdinfo)
     call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], symbol)
     " mck
 endfunction
@@ -626,7 +637,7 @@ function! rtags#jumpToLocationInternal(file, line, col)
         redraw!
         return 1
     catch /.*/
-        echohl ErrorMsg
+        echohl DiffDelete
         echomsg v:exception
         echohl None
         return 0
@@ -758,7 +769,7 @@ function! rtags#JumpBackSave()
     endif
 endfunction
 
-function! rtags#JumpToParentHandler(results)
+function! rtags#JumpToParentHandler(results, symbol)
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
@@ -783,6 +794,7 @@ function! rtags#JumpToParentHandler(results)
             return
         endif
     endfor
+    " mck - is it an error if here ?
 endfunction
 
 function! rtags#JumpToParent(...)
@@ -799,7 +811,7 @@ function! rtags#JumpToParent(...)
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    call rtags#ExecuteThen(args, [function('rtags#JumpToParentHandler')], symbol)
+    call rtags#ExecuteThen(args, [[function('rtags#JumpToParentHandler'), symbol]], symbol)
 endfunction
 
 function! s:GetCharacterUnderCursor()
@@ -873,7 +885,7 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
     endif
     if exists('unsaved_content')
         let filename = expand("%:p")
-        let output = system(printf("%s --wait --unsaved-file=%s:%s -V %s", cmd, filename, strlen(unsaved_content), filename), unsaved_content)
+        silent let output = system(printf("%s --wait --unsaved-file=%s:%s -V %s", cmd, filename, strlen(unsaved_content), filename), unsaved_content)
         let b:rtags_sent_content = unsaved_content
     endif
 
@@ -885,7 +897,7 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c ("' . cmd . ' | sort | head -n 500) 2>&1"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
     let cmd = cmd2
 
     let s:job_cid = s:job_cid + 1
@@ -896,7 +908,7 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
         let s:callbacks = {
             \ 'on_exit' : function('rtags#HandleResults')
             \ }
-        let cmd = cmd . ' >' . rtags#TempFile(s:job_cid) . ' 2>&1'
+        let cmd = cmd . ' >' . rtags#TempFile(s:job_cid)
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
@@ -983,7 +995,7 @@ function! rtags#ExecuteHandlers(output, handlers, jb_symbol)
                 let result = Handler(result, a:jb_symbol)
             catch /E*/
                 " If we're not returning the right type we're probably done
-                echohl WarningMsg
+                echohl DiffDelete
                 echomsg "[vim-rtags] ExecuteHandlers Error:"
                 echomsg v:exception
                 echomsg v:throwpoint
@@ -1001,7 +1013,7 @@ function! rtags#ExecuteThen(args, handlers, symbol)
     if s:rtagsAsync == 1
         call rtags#ExecuteRCAsync(a:args, a:handlers, a:symbol)
     else
-        let result = rtags#ExecuteRC(a:args)
+        let result = rtags#ExecuteRC(a:args, a:symbol)
         call rtags#ExecuteHandlers(result, a:handlers, a:symbol)
     endif
 endfunction
@@ -1065,8 +1077,9 @@ function! rtags#FindSuperClasses()
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
+    let cmdinfo = 'FindSuperClasses: ' . symbol
     call rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() },
-                \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')], symbol)
+                \ [function('rtags#ExtractSuperClasses'), function('rtags#DisplayResults')], cmdinfo)
 endfunction
 
 function! rtags#FindSubClasses()
@@ -1079,9 +1092,10 @@ function! rtags#FindSubClasses()
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
+    let cmdinfo = 'FindSubClasses: ' . symbol
     let result = rtags#ExecuteThen({ '--class-hierarchy' : rtags#getCurrentLocation() }, [
                 \ function('rtags#ExtractSubClasses'),
-                \ function('rtags#DisplayResults')], symbol)
+                \ function('rtags#DisplayResults')], cmdinfo)
 endfunction
 
 function! rtags#FindVirtuals()
@@ -1188,8 +1202,12 @@ function! rtags#IFindSymbols(pattern)
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:pattern)
 endfunction
 
-function! rtags#ProjectListHandler(output)
+function! rtags#ProjectListHandler(output, jb_args)
     let projects = a:output
+    if len(projects) == 0
+        echohl DiffDelete | echomsg "[vim-rtags] No projects found" | echohl None
+        return
+    endif
     let i = 1
     for p in projects
         echo '['.i.'] '.p
@@ -1202,10 +1220,10 @@ function! rtags#ProjectListHandler(output)
 endfunction
 
 function! rtags#ProjectList()
-    let symbol = 'Project-list'
+    let symbol = 'ProjectList'
     "call rtags#ExecuteThen({ '-w' : '' }, [function('rtags#ProjectListHandler')], symbol)
     " mck - async does not work yet
-    let result = rtags#ExecuteRC({ '-w' : '' })
+    let result = rtags#ExecuteRC({ '-w' : '' }, symbol)
     call rtags#ExecuteHandlers(result, [function('rtags#ProjectListHandler')], symbol)
     " mck
 endfunction
@@ -1218,7 +1236,7 @@ function! rtags#ProjectOpen(pattern)
         return
     endif
     "call rtags#ExecuteThen({ '-w' : a:pattern }, [], a:pattern)
-    call rtags#ExecuteRC({ '-w' : a:pattern })
+    call rtags#ExecuteRC({ '-w' : a:pattern }, 'ProjectOpen')
 endfunction
 
 function! rtags#LoadCompilationDb(pattern)
@@ -1229,7 +1247,7 @@ function! rtags#LoadCompilationDb(pattern)
         return
     endif
     "call rtags#ExecuteThen({ '-J' : a:pattern }, [], a:pattern)
-    call rtags#ExecuteRC({ '-J' : a:pattern })
+    call rtags#ExecuteRC({ '-J' : a:pattern }, 'LoadCompilationDb')
 endfunction
 
 function! rtags#ProjectClose(pattern)
@@ -1240,7 +1258,7 @@ function! rtags#ProjectClose(pattern)
         return
     endif
     "call rtags#ExecuteThen({ '-u' : a:pattern }, [], a:pattern)
-    call rtags#ExecuteRC({ '-u' : a:pattern })
+    call rtags#ExecuteRC({ '-u' : a:pattern }, 'ProjectClose')
 endfunction
 
 function! rtags#PreprocessFileHandler(result)
@@ -1273,7 +1291,7 @@ function! rtags#ReindexFile(arg)
     let symbol = 'ReindexFile' " TODO
     "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [], symbol)
     " mck - async does not work yet
-    call rtags#ExecuteRC({ '-V' : expand("%:p") })
+    call rtags#ExecuteRC({ '-V' : expand("%:p") }, 'PreprocessFile')
     if a:arg ==# 1
         sleep 551m
     endif
