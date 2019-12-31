@@ -35,6 +35,7 @@ if !exists("g:rtagsAutoLaunchRdm")
     let g:rtagsAutoLaunchRdm = 0
 endif
 
+let g:rtagsJumpStack = []
 if !exists("g:rtagsJumpStackMaxSize")
     let g:rtagsJumpStackMaxSize = 100
 endif
@@ -42,8 +43,6 @@ endif
 if !exists("g:rtagsExcludeSysHeaders")
     let g:rtagsExcludeSysHeaders = 0
 endif
-
-let g:rtagsJumpStack = []
 
 if !exists("g:rtagsUseLocationList")
     let g:rtagsUseLocationList = 1
@@ -114,6 +113,8 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rw :call rtags#RenameSymbolUnderCursor()<CR>
     noremap <Leader>rv :call rtags#FindVirtuals()<CR>
     noremap <Leader>rb :call rtags#JumpBack()<CR>
+    noremap <Leader>r, :call rtags#JumpBack()<CR>
+    noremap <Leader>r. :call rtags#JumpForward()<CR>
     noremap <Leader>rh :call rtags#ShowHierarchy()<CR>
     noremap <Leader>rC :call rtags#FindSuperClasses()<CR>
     noremap <Leader>rc :call rtags#FindSubClasses()<CR>
@@ -678,7 +679,6 @@ function! rtags#JumpToHandler(results, args)
         endif
         echohl DiffText | echomsg "[vim-rtags] No addl loc info found for: " . symbol | echohl None
     endif
-
 endfunction
 
 "
@@ -710,7 +710,6 @@ function! rtags#JumpTo(open_opt, ...)
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt, 'symbol' : symbol }]], symbol)
-
 endfunction
 
 function! rtags#parseSourceLocation(string)
@@ -727,9 +726,12 @@ function! rtags#parseSourceLocation(string)
 endfunction
 
 function! rtags#saveLocation()
+    " mck - not used right now
+    return
+
     let [lnum, col] = getpos('.')[1:2]
-"   call rtags#pushToStack([expand("%:p"), lnum, col])
     let jump_file = expand("%:p")
+"   call rtags#pushToStack([jump_file, lnum, col])
     if len(g:rtagsJumpStack) > 0
         let [old_file, olnum, ocol] = get(g:rtagsJumpStack, -1)
         if old_file == jump_file && olnum == lnum && ocol == col
@@ -751,22 +753,28 @@ function! rtags#pushToStack(location)
 endfunction
 
 function! rtags#JumpBack()
-    if len(g:rtagsJumpStack) > 0
-        let [jump_file, lnum, col] = remove(g:rtagsJumpStack, -1)
-        call rtags#jumpToLocationInternal(jump_file, lnum, col)
-    else
-        "echo "rtags: jump stack is empty"
-        execute "normal" "\<C-o>"
-    endif
+    execute "normal \<C-o>"
+    "if len(g:rtagsJumpStack) > 0
+    "    "let [jump_file, lnum, col] = remove(g:rtagsJumpStack, -1)
+    "    let [jump_file, lnum, col] = get(g:rtagsJumpStack, -1)
+    "    call rtags#jumpToLocationInternal(jump_file, lnum, col)
+    "else
+    "    "echo "rtags: jump stack is empty"
+    "    execute "normal \<C-o>"
+    "endif
 endfunction
 
-function! rtags#JumpBackSave()
-    if len(g:rtagsJumpStack) > 0
-        let [jump_file, lnum, col] = get(g:rtagsJumpStack, -1)
-        call rtags#jumpToLocationInternal(jump_file, lnum, col)
-    else
-        echo "rtags: jump stack is empty"
-    endif
+function! rtags#JumpForward()
+    " NOTE: need the 1 before the \<C-i> ...
+    execute "normal 1\<C-i>"
+    "if len(g:rtagsJumpStack) > 0
+    "    "let [jump_file, lnum, col] = remove(g:rtagsJumpStack, 0)
+    "    let [jump_file, lnum, col] = get(g:rtagsJumpStack, 0)
+    "    call rtags#jumpToLocationInternal(jump_file, lnum, col)
+    "else
+    "    "echo "rtags: jump stack is empty"
+    "    execute "normal 1\<C-i>"
+    "endif
 endfunction
 
 function! rtags#JumpToParentHandler(results, symbol)
