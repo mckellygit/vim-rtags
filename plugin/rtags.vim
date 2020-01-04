@@ -649,6 +649,7 @@ function! rtags#JumpToHandler(results, args)
     let results = a:results
     let open_opt = a:args['open_opt']
     let symbol = a:args['symbol']
+    let skipjump = get(a:args, 'skip_jump', 'n')
 
     if len(results) > 1
         call rtags#DisplayResults(results, args)
@@ -668,16 +669,22 @@ function! rtags#JumpToHandler(results, args)
         endif
         " mck - new tab if different file and tab split if same file and want new tab
 
-        " Add location to the jumplist
-        normal! m'
+        if skipjump != 'y'
+            " Add location to the jumplist
+            normal! m'
+        endif
         if rtags#jumpToLocation(jump_file, lnum, col)
-            normal! zz
+            if skipjump != 'y'
+                normal! zz
+            else
+                keepjumps normal! zz
+            endif
         endif
     else
         if empty(symbol)
             let symbol = '<unable to determine symbol>'
         endif
-        echohl DiffText | echomsg "[vim-rtags] No addl loc info found for: " . symbol | echohl None
+        echohl DiffText | echomsg "[vim-rtags] No addl loc info for: " . symbol | echohl None
     endif
 endfunction
 
@@ -803,9 +810,30 @@ function! rtags#JumpToParentHandler(results, symbol)
         endif
     endfor
     " mck - is it an error if here ?
+    "echohl DiffText | echomsg "[vim-rtags] No Parent info for: " . a:symbol | echohl None
+    let [clnum, ccol] = getpos('.')[1:2]
+    let cfile = expand("%:p")
+    " mck - ask if want to try to jump more
+    echohl DiffText | echomsg "[vim-rtags] No Parent info for: " . a:symbol . " Try to jump? (<y>/n): " | echohl None
+    let ans=nr2char(getchar())
+    if ans ==# 'y' || ans ==# 'Y' || ans ==# ''
+        let result = rtags#ExecuteRC({ '-f' : rtags#getCurrentLocation() }, a:symbol)
+        call rtags#JumpToHandler(result, { 'open_opt' : g:SAME_WINDOW, 'symbol' : a:symbol, 'skip_jump' : 'y' })
+        let [nlnum, ncol] = getpos('.')[1:2]
+        let nfile = expand("%:p")
+        if nfile == cfile && nlnum == clnum && ncol == ccol
+            echohl DiffAdd | echomsg "[vim-rtags] No addl Parent info for: " . a:symbol | echohl None
+            sleep 651m
+            redraw!
+        else
+            call rtags#JumpToParent()
+        endif
+    else
+        redraw!
+    endif
 endfunction
 
-function! rtags#JumpToParent(...)
+function! rtags#JumpToParent()
     let args = {
                 \ '-U' : rtags#getCurrentLocation(),
                 \ '--symbol-info-include-parents' : '' }
