@@ -140,8 +140,8 @@ g:rtagsAutoReindexOnWrite
                                                               *rtags-JumpTo-Tab*
     <Leader>rT      Same as <Leader>rj, but opens target location in a new tab.
 
-                                                              *rtags-leader-rt*
-                                                              *rtags-JumpTo-Tab*
+                                                    *rtags-leader-rt*
+                                                    *rtags-JumpTo-TabIfDiffFile*
     <Leader>rt      Same as <Leader>rT, but only uses a new tab if target
                     location is in a different file.
 
