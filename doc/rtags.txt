@@ -104,7 +104,6 @@ g:rtagsLog
 
     Default: empty
     When set to filename, rtags will put its logs in that file.
-
                                                                 *rtags-mappings*
 4. Mappings
                                                               *rtags-leader-ri*
@@ -119,9 +118,9 @@ g:rtagsLog
                                                              *rtags-JumpTo-Decl*
     <Leader>rJ      Jump to declaration.
 
-                                                            *rtags-leader-rS*
+                                                            *rtags-leader-rH*
                                                             *rtags-JumpTo-Split*
-    <Leader>rS      Same as <Leader>rj, but opens target location in a
+    <Leader>rH      Same as <Leader>rj, but opens target location in a
                     horizontal split.
 
                                                        *rtags-leader-rV*
@@ -132,6 +131,11 @@ g:rtagsLog
                                                               *rtags-leader-rT*
                                                               *rtags-JumpTo-Tab*
     <Leader>rT      Same as <Leader>rj, but opens target location in a new tab.
+
+                                                              *rtags-leader-rt*
+                                                              *rtags-JumpTo-Tab*
+    <Leader>rt      Same as <Leader>rT, but only uses a new tab if target
+                    location is in a different file.
 
                                                             *rtags-leader-rp*
                                                             *rtags-JumpToParent*
@@ -192,6 +196,22 @@ g:rtagsLog
                                                             *rtags-leader-rc*
                                                             *rtags-FindSubClasses*
     <Leader>rc      Find the subclasses of the class under the cursor.
+
+                                                            *rtags-leader-rh*
+                                                            *rtags-ShowHierarchy*
+    <Leader>rh      Show hierarchy.
+
+                                                            *rtags-leader-rd*
+                                                            *rtags-Diagnostics*
+    <Leader>rd      run diagnostics.
+
+                                                              *rtags-leader-r,*
+                                                              *rtags-JumpBack*
+    <Leader>r,      Jump back to previous location.
+
+                                                              *rtags-leader-r.*
+                                                              *rtags-JumpForward*
+    <Leader>r.      Jump forward to next location.
 
                                                                 *rtags-commands*
 5. Commands

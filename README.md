@@ -2,6 +2,8 @@
 
 Vim bindings for rtags.
 
+NOTE: Forked from original version: lyuts/vim-rtags
+
 https://github.com/Andersbakken/rtags
 
 # Requirements
@@ -10,7 +12,7 @@ https://github.com/Andersbakken/rtags
 ## Vundle
 Add the following line to ```.vimrc```
 
-    Plugin 'lyuts/vim-rtags'
+    Plugin 'mckellyln/vim-rtags'
 
 then while in vim run:
 
@@ -20,7 +22,7 @@ then while in vim run:
 ## NeoBundle
 Add the following line to ```.vimrc```
 
-    NeoBundle 'lyuts/vim-rtags'
+    NeoBundle 'mckellyln/vim-rtags'
 
 then while in vim run:
 
@@ -29,7 +31,7 @@ then while in vim run:
 
 ## Pathogen
     $ cd ~/.vim/bundle
-    $ git clone https://github.com/lyuts/vim-rtags
+    $ git clone https://github.com/mckellyln/vim-rtags
 
 # Configuration
 This plugin interacts with RTags by invoking ```rc``` commands and interpreting
@@ -61,9 +63,10 @@ It is possible to set its maximum size (number of entries), default is 100:
 | &lt;Leader&gt;ri | -U                               | Symbol info                                |
 | &lt;Leader&gt;rj | -f                               | Follow location                            |
 | &lt;Leader&gt;rJ | -f --declaration-only            | Follow declaration location                |
-| &lt;Leader&gt;rS | -f                               | Follow location (open in horizontal split) |
+| &lt;Leader&gt;rH | -f                               | Follow location (open in horizontal split) |
 | &lt;Leader&gt;rV | -f                               | Follow location (open in vertical split)   |
 | &lt;Leader&gt;rT | -f                               | Follow location open in a new tab          |
+| &lt;Leader&gt;rt | -f                               | same as rT but same tab if in same file    |
 | &lt;Leader&gt;rp | -U --symbol-info-include-parents | Jump to parent                             |
 | &lt;Leader&gt;rc | --class-hierarchy                | Find subclasses                            |
 | &lt;Leader&gt;rC | --class-hierarchy                | Find superclasses                          |
@@ -77,7 +80,8 @@ It is possible to set its maximum size (number of entries), default is 100:
 | &lt;Leader&gt;rw | -e -r --rename                   | Rename symbol under cursor                 |
 | &lt;Leader&gt;rv | -k -r                            | Find virtuals                              |
 | &lt;Leader&gt;rd | --diagnose                       | Diagnose file for warnings and errors      |
-| &lt;Leader&gt;rb | N/A                              | Jump to previous location                  |
+| &lt;Leader&gt;r, | N/A                              | Jump to previous location                  |
+| &lt;Leader&gt;r. | N/A                              | Jump to next location                      |
 
 ## Unite sources
 
