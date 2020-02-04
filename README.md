@@ -55,6 +55,10 @@ It is possible to set its maximum size (number of entries), default is 100:
 
     let g:rtagsJumpStackMaxSize = 100
 
+To automatically re-index file on every save/write, set: (default is 0)
+
+    let g:rtagsAutoReindexOnWrite = 1
+
 # Usage
 
 ## Mappings
