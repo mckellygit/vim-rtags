@@ -104,6 +104,14 @@ g:rtagsLog
 
     Default: empty
     When set to filename, rtags will put its logs in that file.
+
+                                        *g:rtagsAutoReindexOnWrite*
+                                        *rtags-variable-auto-reindex-on-write*
+g:rtagsAutoReindexOnWrite
+
+    Default: 0.
+    If set to 1, automatically reindex file on every save/write.
+
                                                                 *rtags-mappings*
 4. Mappings
                                                               *rtags-leader-ri*
