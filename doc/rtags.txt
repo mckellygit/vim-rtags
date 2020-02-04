@@ -1,6 +1,8 @@
 *vim-rtags* VIM bindings for RTags, C/C++ code indexer.
 *rtags.txt* VIM bindings for RTags, C/C++ code indexer.
 
+NOTE: This version forked from: lyuts/vim-rtags
+
 CONTENTS                                                        *rtags-contents*
 
     1. Intro                                            |rtags-intro|
