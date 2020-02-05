@@ -55,9 +55,10 @@ It is possible to set its maximum size (number of entries), default is 100:
 
     let g:rtagsJumpStackMaxSize = 100
 
-To automatically re-index file on every save/write, set: (default is 0)
+To automatically re-index file on every save/write, default is 0:
 
     let g:rtagsAutoReindexOnWrite = 1
+
 
 # Usage
 
@@ -128,10 +129,13 @@ Such config provides automatic calls, of omnicompletion on c and cpp entity acce
 * There is no support for function argument completion
 
 # Notes
-1. This plugin is wip.
+1. Forked from original version: lyuts/vim-rtags
+2. Tested with vim, need to test with neovim
+3. PRs welcome
 
 # Development
 Unit tests for some plugin functions can be found in ```tests``` directory.
 To run tests, execute:
 
     $ vim tests/test_rtags.vim +UnitTest
+
