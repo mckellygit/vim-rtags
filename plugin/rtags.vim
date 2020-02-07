@@ -584,14 +584,38 @@ function! rtags#getCurrentLocation()
 endfunction
 
 function! rtags#SymbolInfoHandler(output, jb_args)
-    let result = join(a:output, "\n")
-    if result ==# 'Not indexed'
+    let l = len(a:output)
+    if l == 0
+        redraw!
+        echohl ErrorMsg | echomsg "[vim-rtags] no info returned for: " . a:jb_args | echohl None
+        return
+    endif
+    if a:output[0] ==# 'Not indexed'
         redraw!
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
     endif
-    " mck - dont redraw! here, want prompt to continue ...
-    echo result
+
+    " --------------
+    " if from async job join() uses ^@ instead of \n and we get only one line ...
+    " let result = join(a:output, "\n")
+    " " mck - dont redraw! here, want prompt to continue ...
+    " echo result
+    " --------------
+
+    let list2 = []
+    for rec in a:output
+        call add(list2, { "text":rec })
+    endfor
+    let num_lines = len(list2)
+    if num_lines > 0
+        call setloclist(winnr(), list2)
+        exe 'lopen ' | set nowrap | clearjumps
+    else
+        redraw!
+        echohl ErrorMsg | echomsg "[vim-rtags] no info returned for: " . a:jb_args | echohl None
+        return
+    endif
 endfunction
 
 function! rtags#SymbolInfo()
@@ -604,11 +628,11 @@ function! rtags#SymbolInfo()
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    "call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')], symbol)
+    call rtags#ExecuteThen({ '-U' : rtags#getCurrentLocation() }, [function('rtags#SymbolInfoHandler')], symbol)
     " mck - async does not work yet
-    let cmdinfo = 'SymbolInfo: ' . symbol
-    let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() }, cmdinfo)
-    call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], symbol)
+    "let cmdinfo = 'SymbolInfo: ' . symbol
+    "let result = rtags#ExecuteRC({ '-U' : rtags#getCurrentLocation() }, cmdinfo)
+    "call rtags#ExecuteHandlers(result, [function('rtags#SymbolInfoHandler')], symbol)
     " mck
 endfunction
 
@@ -716,7 +740,7 @@ function! rtags#JumpTo(open_opt, ...)
     let &iskeyword = l:oldiskeyword
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
-    let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt, 'symbol' : symbol }]], symbol)
+    call rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : a:open_opt, 'symbol' : symbol }]], symbol)
 endfunction
 
 function! rtags#parseSourceLocation(string)
