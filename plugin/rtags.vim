@@ -610,7 +610,7 @@ function! rtags#SymbolInfoHandler(output, jb_args)
     let num_lines = len(list2)
     if num_lines > 0
         call setloclist(winnr(), list2)
-        exe 'lopen ' | set nowrap | clearjumps
+        exe 'lopen '.min([g:rtagsMaxSearchResultWindowHeight, num_lines]) | set nowrap | clearjumps
     else
         redraw!
         echohl ErrorMsg | echomsg "[vim-rtags] no info returned for: " . a:jb_args | echohl None
