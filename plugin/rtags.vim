@@ -1379,21 +1379,17 @@ function! rtags#Diagnostics()
 endfunction
 
 function! rtags#SuspendIndexing()
-    silent call rtags#ExecuteRC({ '--suspend' : 'all' }, 'SuspendIndexing')
+    let result = rtags#ExecuteRC({ '--suspend' : 'all' }, 'SuspendIndexing')
     redraw!
-    let rtagscmdmsg = '[vim-rtags] Suspend Indexing'
+    let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
     echohl DiffText | echo rtagscmdmsg | echohl None
-    sleep 651m
-    redraw!
 endfunction
 
 function! rtags#ResumeIndexing()
-    silent call rtags#ExecuteRC({ '--suspend' : 'clear' }, 'ResumeIndexing')
+    let result = rtags#ExecuteRC({ '--suspend' : 'clear' }, 'ResumeIndexing')
     redraw!
-    let rtagscmdmsg = '[vim-rtags] Resume Indexing'
+    let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
     echohl DiffText | echo rtagscmdmsg | echohl None
-    sleep 651m
-    redraw!
 endfunction
 
 "
