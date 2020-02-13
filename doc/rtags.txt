@@ -223,6 +223,15 @@ g:rtagsAutoReindexOnWrite
                                                               *rtags-JumpForward*
     <Leader>r.      Jump forward to next location.
 
+                                                              *rtags-leader-r0*
+                                                              *rtags-SuspendIndexing*
+    <Leader>r0      Suspend indexing.
+
+                                                              *rtags-leader-r1*
+                                                              *rtags-ResumeIndexing*
+    <Leader>r1      Resume indexing.
+
+
                                                                 *rtags-commands*
 5. Commands
 

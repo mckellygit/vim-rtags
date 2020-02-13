@@ -119,6 +119,8 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rC :call rtags#FindSuperClasses()<CR>
     noremap <Leader>rc :call rtags#FindSubClasses()<CR>
     noremap <Leader>rd :call rtags#Diagnostics()<CR>
+    noremap <silent> <Leader>r0 :call rtags#SuspendIndexing()<CR>
+    noremap <silent> <Leader>r1 :call rtags#ResumeIndexing()<CR>
 endif
 
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' )
@@ -1374,6 +1376,24 @@ function! rtags#Diagnostics()
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     return s:Pyeval("vimrtags.get_diagnostics()")
+endfunction
+
+function! rtags#SuspendIndexing()
+    silent call rtags#ExecuteRC({ '--suspend' : 'all' }, 'SuspendIndexing')
+    redraw!
+    let rtagscmdmsg = '[vim-rtags] Suspend Indexing'
+    echohl DiffText | echo rtagscmdmsg | echohl None
+    sleep 651m
+    redraw!
+endfunction
+
+function! rtags#ResumeIndexing()
+    silent call rtags#ExecuteRC({ '--suspend' : 'clear' }, 'ResumeIndexing')
+    redraw!
+    let rtagscmdmsg = '[vim-rtags] Resume Indexing'
+    echohl DiffText | echo rtagscmdmsg | echohl None
+    sleep 651m
+    redraw!
 endfunction
 
 "

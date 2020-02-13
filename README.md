@@ -87,6 +87,8 @@ To automatically re-index file on every save/write, default is 0:
 | &lt;Leader&gt;rd | --diagnose                       | Diagnose file for warnings and errors      |
 | &lt;Leader&gt;r, | N/A                              | Jump to previous location                  |
 | &lt;Leader&gt;r. | N/A                              | Jump to next location                      |
+| &lt;Leader&gt;r0 | --suspend all                    | Suspend indexing                           |
+| &lt;Leader&gt;r1 | --suspend clear                  | Resume indexing                            |
 
 ## Unite sources
 
