@@ -59,6 +59,10 @@ To automatically re-index file on every save/write, default is 0:
 
     let g:rtagsAutoReindexOnWrite = 1
 
+To add colon (:) to symbol 'word' (via iskeyword), default is 0:
+(use <Leader>rx [default mapping] to toggle)
+
+    let g:rtagsUseColonKeyword = 1
 
 # Usage
 
@@ -89,6 +93,7 @@ To automatically re-index file on every save/write, default is 0:
 | &lt;Leader&gt;r. | N/A                              | Jump to next location                      |
 | &lt;Leader&gt;r0 | --suspend all                    | Suspend indexing                           |
 | &lt;Leader&gt;r1 | --suspend clear                  | Resume indexing                            |
+| &lt;Leader&gt;rx | N/A                              | toggle colon (:) in symbol 'word'          |
 
 ## Unite sources
 

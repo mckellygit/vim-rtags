@@ -114,6 +114,14 @@ g:rtagsAutoReindexOnWrite
     Default: 0.
     If set to 1, automatically reindex file on every save/write.
 
+                                        *g:rtagsUseColonKeyword*
+                                        *rtags-variable-use-colon-keyword*
+g:rtagsUseColonKeyword
+
+    Default: 0.
+    If set to 1, add colon (:) to symbol 'word' (via iskeyword)
+    Use <Leader>rx [default mapping] to toggle.
+
                                                                 *rtags-mappings*
 4. Mappings
                                                               *rtags-leader-ri*
@@ -215,22 +223,25 @@ g:rtagsAutoReindexOnWrite
                                                             *rtags-Diagnostics*
     <Leader>rd      run diagnostics.
 
-                                                              *rtags-leader-r,*
-                                                              *rtags-JumpBack*
+                                                            *rtags-leader-r,*
+                                                            *rtags-JumpBack*
     <Leader>r,      Jump back to previous location.
 
-                                                              *rtags-leader-r.*
-                                                              *rtags-JumpForward*
+                                                            *rtags-leader-r.*
+                                                            *rtags-JumpForward*
     <Leader>r.      Jump forward to next location.
 
-                                                              *rtags-leader-r0*
-                                                              *rtags-SuspendIndexing*
+                                                            *rtags-leader-r0*
+                                                            *rtags-SuspendIndexing*
     <Leader>r0      Suspend indexing.
 
-                                                              *rtags-leader-r1*
-                                                              *rtags-ResumeIndexing*
+                                                            *rtags-leader-r1*
+                                                            *rtags-ResumeIndexing*
     <Leader>r1      Resume indexing.
 
+                                                            *rtags-leader-rx*
+                                                            *rtags-UseColonKeyword*
+    <Leader>rx      Toggle colon (:) in symbol 'word'.
 
                                                                 *rtags-commands*
 5. Commands

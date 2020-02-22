@@ -121,6 +121,7 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rd :call rtags#Diagnostics()<CR>
     noremap <silent> <Leader>r0 :call rtags#SuspendIndexing()<CR>
     noremap <silent> <Leader>r1 :call rtags#ResumeIndexing()<CR>
+    noremap <silent> <Leader>rx :call rtags#ToggleColonKeyword()<CR>
 endif
 
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' )
@@ -1390,6 +1391,19 @@ function! rtags#ResumeIndexing()
     redraw!
     let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
     echohl DiffText | echo rtagscmdmsg | echohl None
+endfunction
+
+function! rtags#ToggleColonKeyword()
+  if (g:rtagsUseColonKeyword == 0)
+    let g:rtagsUseColonKeyword = 1
+    let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is enabled'
+  else
+    let g:rtagsUseColonKeyword = 0
+    let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is disabled'
+  endif
+  echohl DiffChange | echo l:rtagskeywordmsg | echohl None
+  sleep 651m
+  redraw!
 endfunction
 
 "
