@@ -96,9 +96,12 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rj :call rtags#JumpTo(g:SAME_WINDOW)<CR>
     noremap <Leader>rJ :call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
     "noremap <Leader>rS :call rtags#JumpTo(g:H_SPLIT)<CR>
+    noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
     " mck - add rH for Horizontal split
     noremap <Leader>rH :call rtags#JumpTo(g:H_SPLIT)<CR>
-    noremap <Leader>rV :call rtags#JumpTo(g:V_SPLIT)<CR>
+    " mck - to match tmux ...
+    noremap <Leader>r\| :call rtags#JumpTo(g:V_SPLIT)<CR>
+    noremap <Leader>r_  :call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - really a tab split if same file
     noremap <Leader>rT :call rtags#JumpTo(g:NEW_TAB)<CR>
     " mck - add rt for new tab if diff file

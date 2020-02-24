@@ -136,15 +136,15 @@ g:rtagsUseColonKeyword
                                                              *rtags-JumpTo-Decl*
     <Leader>rJ      Jump to declaration.
 
-                                                            *rtags-leader-rH*
-                                                            *rtags-JumpTo-Split*
-    <Leader>rH      Same as <Leader>rj, but opens target location in a
-                    horizontal split.
-
                                                        *rtags-leader-rV*
                                                        *rtags-JumpTo-Vert-Split*
     <Leader>rV      Same as <Leader>rj, but opens target location in a vertical
-                    split.
+                    split (also as <Leader>r|).
+
+                                                            *rtags-leader-rH*
+                                                            *rtags-JumpTo-Split*
+    <Leader>rH      Same as <Leader>rj, but opens target location in a
+                    horizontal split (also as <Leader>r_).
 
                                                               *rtags-leader-rT*
                                                               *rtags-JumpTo-Tab*
