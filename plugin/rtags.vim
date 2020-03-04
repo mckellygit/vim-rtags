@@ -109,8 +109,13 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rp :call rtags#JumpToParent()<CR>
     noremap <Leader>rf :call rtags#FindRefs()<CR>
     noremap <Leader>rF :call rtags#FindRefsCallTree()<CR>
-    noremap <Leader>rn :call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rs :call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+
+    " CompleteSymbols can be huge and take too long ...
+    "noremap <Leader>rn :call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rn :call rtags#FindRefsByName(input("Pattern? ", "", ""))<CR>
+    "noremap <Leader>rs :call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rs :call rtags#FindSymbols(input("Pattern? ", "", ""))<CR>
+
     noremap <Leader>rr :call rtags#ReindexFile(1)<CR>
     noremap <Leader>rl :call rtags#ProjectList()<CR>
     noremap <Leader>rw :call rtags#RenameSymbolUnderCursor()<CR>
