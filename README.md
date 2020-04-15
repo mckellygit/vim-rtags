@@ -74,7 +74,7 @@ To add colon (:) to symbol 'word' (via iskeyword), default is 0:
 | &lt;Leader&gt;rJ | -f --declaration-only            | Follow declaration location                |
 | &lt;Leader&gt;rV | -f                               | Follow location (open in vertical split)   |
 | &lt;Leader&gt;rH | -f                               | Follow location (open in horizontal split) |
-| &lt;Leader&gt;r| | -f                               | Same as &lt;Leader&gt;rV                   |
+| &lt;Leader&gt;r\|| -f                               | Same as &lt;Leader&gt;rV                   |
 | &lt;Leader&gt;r_ | -f                               | Same as &lt;Leader&gt;rH                   |
 | &lt;Leader&gt;rT | -f                               | Follow location open in a new tab          |
 | &lt;Leader&gt;rt | -f                               | same as rT but same tab if in same file    |
