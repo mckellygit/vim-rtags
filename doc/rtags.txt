@@ -231,6 +231,10 @@ g:rtagsUseColonKeyword
                                                             *rtags-JumpForward*
     <Leader>r.      Jump forward to next location.
 
+                                                            *rtags-leader-rm*
+                                                            *rtags-JumpToMethod*
+    <Leader>rm      Find and jump to method in current file.
+
                                                             *rtags-leader-r0*
                                                             *rtags-SuspendIndexing*
     <Leader>r0      Suspend indexing.

@@ -116,6 +116,8 @@ if g:rtagsUseDefaultMappings == 1
     "noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
 
+    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+
     noremap <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
     noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
     noremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
@@ -887,6 +889,16 @@ endfunction
 
 function! s:GetCharacterUnderCursor()
     return matchstr(getline('.'), '\%' . col('.') . 'c.')
+endfunction
+
+function! rtags#JumpToMethod(pattern)
+    let current_file = expand("%")
+    let args = {
+                \ '-a' : '',
+                \ '-F': a:pattern,
+                \ '--kind-filter': 'CXXMethod',
+                \ '-i': current_file }
+    let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : g:SAME_WINDOW, 'symbol' : symbol }]], symbol)
 endfunction
 
 function! rtags#RenameSymbolUnderCursorHandler(output)
