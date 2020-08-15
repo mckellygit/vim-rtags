@@ -116,7 +116,8 @@ if g:rtagsUseDefaultMappings == 1
     "noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
 
-    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    "noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
     noremap <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
     noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
@@ -689,7 +690,7 @@ function! rtags#JumpToHandler(results, args)
     let skipjump = get(a:args, 'skip_jump', 'n')
 
     if len(results) > 1
-        call rtags#DisplayResults(results, args)
+        call rtags#DisplayResults(results, a:args)
     elseif len(results) == 1 && results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
@@ -892,13 +893,25 @@ function! s:GetCharacterUnderCursor()
 endfunction
 
 function! rtags#JumpToMethod(pattern)
-    let current_file = expand("%")
+    let current_file = expand("%:p")
     let args = {
                 \ '-a' : '',
-                \ '-F': a:pattern,
-                \ '--kind-filter': 'CXXMethod',
-                \ '-i': current_file }
-    let results = rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : g:SAME_WINDOW, 'symbol' : symbol }]], symbol)
+                \ '-F' : a:pattern,
+                \ '--kind-filter' : 'CXXMethod',
+                \ '-i' : current_file }
+
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
+    let symbol = expand("<cword>")
+    let rtagscmdmsg = '[vim-rtags] JumpToMethod: '. symbol
+    let &iskeyword = l:oldiskeyword
+    echohl Comment | echo rtagscmdmsg | echohl None
+    call rtags#saveLocation()
+    "let result = rtags#ExecuteRC(args, symbol)
+    "call rtags#JumpToHandler(result, { 'open_opt' : g:SAME_WINDOW, 'symbol' : symbol, 'skip_jump' : 'n' })
+    call rtags#ExecuteThen(args, [[function('rtags#JumpToHandler'), { 'open_opt' : g:SAME_WINDOW, 'symbol' : symbol, 'skip_jump' : 'n' }]], symbol)
 endfunction
 
 function! rtags#RenameSymbolUnderCursorHandler(output)
