@@ -93,6 +93,7 @@ To add colon (:) to symbol 'word' (via iskeyword), default is 0:
 | &lt;Leader&gt;rd | --diagnose                       | Diagnose file for warnings and errors      |
 | &lt;Leader&gt;r, | N/A                              | Jump to previous location                  |
 | &lt;Leader&gt;r. | N/A                              | Jump to next location                      |
+| &lt;Leader&gt;rm | --kind-filter -i -F              | Find method in current file                |
 | &lt;Leader&gt;r0 | --suspend all                    | Suspend indexing                           |
 | &lt;Leader&gt;r1 | --suspend clear                  | Resume indexing                            |
 | &lt;Leader&gt;rx | N/A                              | Toggle colon (:) in symbol 'word'          |
