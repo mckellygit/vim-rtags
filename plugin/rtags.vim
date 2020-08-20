@@ -135,7 +135,7 @@ if g:rtagsUseDefaultMappings == 1
     nnoremap <Leader>rx <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
 
     " NOTE: also suggest these mappings:
-    "nnoremap <buffer> <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    "nnoremap <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
     "autocmd BufReadPost quickfix nnoremap <silent> <buffer> <C-]> <Return>
 endif
 
