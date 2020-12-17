@@ -744,6 +744,7 @@ endfunction
 "
 function! rtags#JumpTo(open_opt, ...)
     if &buftype == 'terminal'
+        echo " "
         return
     endif
 
