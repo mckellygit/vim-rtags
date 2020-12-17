@@ -743,6 +743,10 @@ endfunction
 "     a:1 - dictionary of additional arguments for 'rc'
 "
 function! rtags#JumpTo(open_opt, ...)
+    if &buftype == 'terminal'
+        return
+    endif
+
     let args = {}
     if a:0 > 0
         let args = a:1
