@@ -31,7 +31,7 @@ then while in vim run:
 
 ## Pathogen
     $ cd ~/.vim/bundle
-    $ git clone https://github.com/mckellyln/vim-rtags
+    $ git clone https://github.com/mckellygit/vim-rtags
 
 # Configuration
 This plugin interacts with RTags by invoking ```rc``` commands and interpreting
