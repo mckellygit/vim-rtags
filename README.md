@@ -12,7 +12,7 @@ https://github.com/Andersbakken/rtags
 ## Vundle
 Add the following line to ```.vimrc```
 
-    Plugin 'mckellyln/vim-rtags'
+    Plugin 'mckellygit/vim-rtags'
 
 then while in vim run:
 
@@ -22,7 +22,7 @@ then while in vim run:
 ## NeoBundle
 Add the following line to ```.vimrc```
 
-    NeoBundle 'mckellyln/vim-rtags'
+    NeoBundle 'mckellygit/vim-rtags'
 
 then while in vim run:
 
