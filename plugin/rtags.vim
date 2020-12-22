@@ -383,6 +383,7 @@ function! rtags#DisplayLocations(locations, args)
     " mck - clear cmdline to signify rtags func is complete
     "let w:quickfix_title=<something>
     "echohl None | echomsg "" | echohl None
+    echo " "
     redraw!
 endfunction
 
@@ -564,6 +565,7 @@ function! rtags#ViewHierarchy(results)
     nnoremap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
     let &cpo = cpo_save
     " mck
+    echo " "
     redraw!
 endfunction
 
@@ -677,6 +679,7 @@ function! rtags#jumpToLocationInternal(file, line, col)
         endif
         call cursor(a:line, a:col)
         " mck - clear cmdline to signify rtags func is complete
+        echo " "
         redraw!
         return 1
     catch /.*/
@@ -871,11 +874,13 @@ function! rtags#JumpToParentHandler(results, symbol)
         if nfile == cfile && nlnum == clnum && ncol == ccol
             echohl DiffAdd | echomsg "[vim-rtags] No addl Parent info for: " . a:symbol | echohl None
             sleep 651m
+            echo " "
             redraw!
         else
             call rtags#JumpToParent()
         endif
     else
+        echo " "
         redraw!
     endif
 endfunction
@@ -1006,6 +1011,10 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
     let cmd = cmd2
 
     let s:job_cid = s:job_cid + 1
+    if s:job_cid > 9999
+        let s:job_cid = 1
+    endif
+
     " should have out+err redirection portable for various shells.
 
     if has('nvim')
@@ -1017,7 +1026,7 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
         let job = jobstart(cmd, s:callbacks)
         let s:jobs[job] = s:job_cid
         let s:result_handlers[job] = a:handlers
-        let s:job_args[ch] = a:symbol
+        let s:job_args[job] = a:symbol
 
     elseif has('job') && has('channel')
 
@@ -1082,7 +1091,7 @@ function! rtags#HandleResults(job_id, data, event)
         let temp_file = rtags#TempFile(job_cid)
         let output = readfile(temp_file)
         let handlers = remove(s:result_handlers, a:job_id)
-        let jb_symbol = remove(s:job_args, ch)
+        let jb_symbol = remove(s:job_args, a:job_id)
         call rtags#ExecuteHandlers(output, handlers, jb_symbol)
         execute 'silent !rm -f ' . temp_file
     endif
@@ -1227,6 +1236,7 @@ function! rtags#FindRefsByName(name)
                 \ '-R' : a:name }
 
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . a:name
+    echo " "
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -1242,6 +1252,7 @@ function! rtags#IFindRefsByName(name)
                 \ '-I' : '' }
 
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . a:name
+    echo " "
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -1265,6 +1276,7 @@ function! rtags#FindSymbols(pattern)
     if empty(a:pattern)
         echo "<empty input>"
         sleep 551m
+        echo " "
         redraw!
         return
     endif
@@ -1273,6 +1285,7 @@ function! rtags#FindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
+    echo " "
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -1292,6 +1305,7 @@ function! rtags#IFindSymbols(pattern)
     if empty(a:pattern)
         echo "<empty input>"
         sleep 551m
+        echo " "
         redraw!
         return
     endif
@@ -1301,6 +1315,7 @@ function! rtags#IFindSymbols(pattern)
                 \ '-F' : a:pattern }
 
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . a:pattern
+    echo " "
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
@@ -1337,6 +1352,7 @@ function! rtags#ProjectOpen(pattern)
     if empty(a:pattern)
         echo "<empty input>"
         sleep 551m
+        echo " "
         redraw!
         return
     endif
@@ -1348,6 +1364,7 @@ function! rtags#LoadCompilationDb(pattern)
     if empty(a:pattern)
         echo "<empty input>"
         sleep 551m
+        echo " "
         redraw!
         return
     endif
@@ -1359,6 +1376,7 @@ function! rtags#ProjectClose(pattern)
     if empty(a:pattern)
         echo "<empty input>"
         sleep 551m
+        echo " "
         redraw!
         return
     endif
@@ -1377,6 +1395,7 @@ function! rtags#PreprocessFile()
 endfunction
 
 function! rtags#ReindexFile(arg)
+    echo " "
     redraw!
     if &filetype ==# 'qf'
         return
@@ -1400,6 +1419,7 @@ function! rtags#ReindexFile(arg)
     if a:arg ==# 1
         sleep 551m
     endif
+    echo " "
     redraw!
 endfunction
 
@@ -1416,6 +1436,7 @@ endfunction
 function! rtags#Diagnostics()
     let s:file = expand("%:p")
     let rtagscmdmsg = '[vim-rtags] run diagnostics'
+    echo
     redraw!
     echohl Comment | echo rtagscmdmsg | echohl None
     return s:Pyeval("vimrtags.get_diagnostics()")
@@ -1423,6 +1444,7 @@ endfunction
 
 function! rtags#SuspendIndexing()
     let result = rtags#ExecuteRC({ '--suspend' : 'all' }, 'SuspendIndexing')
+    echo
     redraw!
     let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
     echohl DiffText | echo rtagscmdmsg | echohl None
@@ -1430,22 +1452,24 @@ endfunction
 
 function! rtags#ResumeIndexing()
     let result = rtags#ExecuteRC({ '--suspend' : 'clear' }, 'ResumeIndexing')
+    echo
     redraw!
     let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
     echohl DiffText | echo rtagscmdmsg | echohl None
 endfunction
 
 function! rtags#ToggleColonKeyword()
-  if (g:rtagsUseColonKeyword == 0)
-    let g:rtagsUseColonKeyword = 1
-    let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is enabled'
-  else
-    let g:rtagsUseColonKeyword = 0
-    let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is disabled'
-  endif
-  echohl DiffChange | echo l:rtagskeywordmsg | echohl None
-  sleep 651m
-  redraw!
+    if (g:rtagsUseColonKeyword == 0)
+        let g:rtagsUseColonKeyword = 1
+        let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is enabled'
+    else
+        let g:rtagsUseColonKeyword = 0
+        let l:rtagskeywordmsg = '[vim-rtags] use symbol colon is disabled'
+    endif
+    echohl DiffChange | echo l:rtagskeywordmsg | echohl None
+    sleep 651m
+    echo " "
+    redraw!
 endfunction
 
 "
