@@ -1395,8 +1395,10 @@ function! rtags#PreprocessFile()
 endfunction
 
 function! rtags#ReindexFile(arg)
-    echo " "
-    redraw!
+    if a:arg != 0
+        echo " "
+        redraw!
+    endif
     if &filetype ==# 'qf'
         return
     elseif &buftype ==# 'terminal'
@@ -1411,16 +1413,18 @@ function! rtags#ReindexFile(arg)
         return
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
-    echohl Comment | echo rtagscmdmsg | echohl None
+    if a:arg != 0
+        echohl Comment | echo rtagscmdmsg | echohl None
+    endif
     let symbol = 'ReindexFile' " TODO
     "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [], symbol)
     " mck - async does not work yet
     call rtags#ExecuteRC({ '-V' : expand("%:p") }, 'PreprocessFile')
-    if a:arg ==# 1
+    if a:arg != 0
         sleep 551m
+        echo " "
+        redraw!
     endif
-    echo " "
-    redraw!
 endfunction
 
 function! rtags#FindSymbolsOfWordUnderCursor()
@@ -1713,7 +1717,7 @@ command! -nargs=1 -complete=customlist,rtags#CompleteSymbols Rtag RtagsIFindSymb
 
 function! rtags#CheckReindexFile()
     if g:rtagsAutoReindexOnWrite ==# 1
-        call rtags#ReindexFile(0)
+        silent call rtags#ReindexFile(0)
     endif
 endfunction
 autocmd Filetype c,cpp autocmd BufWritePost,FileWritePost,FileAppendPost <buffer> call rtags#CheckReindexFile()
