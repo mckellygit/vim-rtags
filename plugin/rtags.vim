@@ -119,7 +119,7 @@ if g:rtagsUseDefaultMappings == 1
     "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
-    nnoremap <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
+    nnoremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
     nnoremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
     nnoremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
     nnoremap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
