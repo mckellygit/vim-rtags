@@ -677,7 +677,9 @@ function! rtags#jumpToLocationInternal(file, line, col)
         if a:file != expand("%:p")
             exe "e ".a:file
         endif
-        call cursor(a:line, a:col)
+        "call cursor(a:line, a:col)
+        let curlistpos = [a:line, a:col]
+        call cursor(curlistpos)
         " mck - clear cmdline to signify rtags func is complete
         redraw!
         echo " "
@@ -718,6 +720,7 @@ function! rtags#JumpToHandler(results, args)
             " Add location to the jumplist
             normal! m'
         endif
+
         if rtags#jumpToLocation(jump_file, lnum, col)
             if skipjump != 'y'
                 normal! zz
@@ -1238,7 +1241,6 @@ function! rtags#FindRefsByName(name)
 
     let rtagscmdmsg = '[vim-rtags] FindRefsByName: ' . a:name
     redraw!
-    echo " "
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:name)
@@ -1254,7 +1256,6 @@ function! rtags#IFindRefsByName(name)
 
     let rtagscmdmsg = '[vim-rtags] IFindRefsByName: ' . a:name
     redraw!
-    echo " "
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:name)
@@ -1287,7 +1288,6 @@ function! rtags#FindSymbols(pattern)
 
     let rtagscmdmsg = '[vim-rtags] FindSymbols: ' . a:pattern
     redraw!
-    echo " "
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:pattern)
@@ -1317,7 +1317,6 @@ function! rtags#IFindSymbols(pattern)
 
     let rtagscmdmsg = '[vim-rtags] IFindSymbols: ' . a:pattern
     redraw!
-    echo " "
     echohl Comment | echo rtagscmdmsg | echohl None
     call rtags#saveLocation()
     call rtags#ExecuteThen(args, [function('rtags#DisplayResults')], a:pattern)
@@ -1398,19 +1397,23 @@ endfunction
 function! rtags#ReindexFile(arg)
     if a:arg != 0
         redraw!
-        echo " "
     endif
     if &filetype ==# 'qf'
+        echo " "
         return
     elseif &buftype ==# 'terminal'
+        echo " "
         return
     elseif &buftype ==# 'quickfix'
+        echo " "
         return
     elseif !&buflisted
+        echo " "
         return
     endif
     let rifile = expand("%:p")
     if empty(rifile)
+        echo " "
         return
     endif
     let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
@@ -1442,24 +1445,21 @@ function! rtags#Diagnostics()
     let s:file = expand("%:p")
     let rtagscmdmsg = '[vim-rtags] run diagnostics'
     redraw!
-    echo " "
     echohl Comment | echo rtagscmdmsg | echohl None
     return s:Pyeval("vimrtags.get_diagnostics()")
 endfunction
 
 function! rtags#SuspendIndexing()
     let result = rtags#ExecuteRC({ '--suspend' : 'all' }, 'SuspendIndexing')
-    redraw!
-    echo " "
     let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
+    redraw!
     echohl DiffText | echo rtagscmdmsg | echohl None
 endfunction
 
 function! rtags#ResumeIndexing()
     let result = rtags#ExecuteRC({ '--suspend' : 'clear' }, 'ResumeIndexing')
-    redraw!
-    echo " "
     let rtagscmdmsg = '[vim-rtags] Indexing: ' . result[0]
+    redraw!
     echohl DiffText | echo rtagscmdmsg | echohl None
 endfunction
 
