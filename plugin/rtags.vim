@@ -132,7 +132,7 @@ if g:rtagsUseDefaultMappings == 1
     nnoremap <Leader>rd <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
     nnoremap <Leader>r0 <C-\><C-n>:<C-u>call rtags#SuspendIndexing()<CR>
     nnoremap <Leader>r1 <C-\><C-n>:<C-u>call rtags#ResumeIndexing()<CR>
-    nnoremap <Leader>rx <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
+    nnoremap <Leader>r: <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
 
     " NOTE: also suggest these mappings:
     "nnoremap <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
