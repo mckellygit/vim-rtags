@@ -14,14 +14,14 @@ import logging
 tempdir = tempfile.gettempdir()
 logfname= tempdir + '/vim-rtags-python-' + user + '.log'
 #logging.basicConfig(filename='%s/vim-rtags-python.log' % tempdir,level=logging.DEBUG)
-logging.basicConfig(filename='%s' % logfname,level=logging.DEBUG)
+#logging.basicConfig(filename='%s' % logfname,level=logging.DEBUG)
 
 def get_identifier_beginning():
     line = vim.eval('s:line')
     column = int(vim.eval('s:start'))
 
-    logging.debug(line)
-    logging.debug(column)
+    #mck logging.debug(line)
+    #mck logging.debug(column)
 
     while column >= 0 and (line[column].isalnum() or line[column] == '_'):
         column -= 1
@@ -71,7 +71,7 @@ def run_rc_command(arguments, content = None):
         out, err = r.communicate(input=content)
 
     if r.returncode != 0:
-        logging.debug(err)
+        #mck logging.debug(err)
         return None
 
     return out
@@ -82,7 +82,7 @@ def get_rtags_variable(name):
 
 def parse_completion_result(data):
     result = json.loads(data)
-    logging.debug(result)
+    #mck logging.debug(result)
     completions = []
 
     for c in result['completions']:
@@ -113,7 +113,7 @@ def send_completion_request():
     prefix = vim.eval('s:prefix')
 
     for buffer in vim.buffers:
-        logging.debug(buffer.name)
+        #mck logging.debug(buffer.name)
         if buffer.name == filename:
             lines = [x for x in buffer]
             content = '\n'.join(lines[:line - 1] + [lines[line - 1] + prefix] + lines[line:])
