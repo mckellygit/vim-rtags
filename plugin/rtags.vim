@@ -9,12 +9,12 @@ else
     let s:rtagsAsync = 0
 endif
 
-if has('python')
-    let g:rtagsPy = 'python'
-elseif has('python3')
+if has('python3')
     let g:rtagsPy = 'python3'
+elseif has('python')
+    let g:rtagsPy = 'python'
 else
-    echohl DiffDelete | echomsg "[vim-rtags] Vim is missing python support" | echohl None
+    echohl DiffDelete | echomsg "[vim-rtags] Vim is missing python(3) support" | echohl None
     finish
 end
 
@@ -69,12 +69,18 @@ if !exists("g:rtagsUseColonKeyword")
 endif
 
 if g:rtagsAutoLaunchRdm
-    silent call system(g:rtagsRcCmd." -w")
-    if v:shell_error != 0 
-       "silent call system(g:rtagsRdmCmd." --daemon > /dev/null")
-       "silent call system(g:rtagsRdmCmd." --log-file /tmp/rdm.log --daemon")
-        silent call system(g:rtagsRdmCmd." --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
-    end
+    "silent call system(g:rtagsRcCmd." -w")
+    "if v:shell_error != 0
+    "    silent call system(g:rtagsRdmCmd." --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
+    "end
+    " much faster method on wsl, should probably only check when first rc command is issued
+    if executable("pgrep") && executable(g:rtagsRdmCmd)
+        let chkcmd = 'pgrep --exact ' . g:rtagsRdmCmd
+        let chkpid = system(chkcmd)
+        if empty(chkpid)
+            silent call system("setsid " . g:rtagsRdmCmd . " --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
+        endif
+    endif
 end
 
 let g:SAME_WINDOW = 'same_window'
