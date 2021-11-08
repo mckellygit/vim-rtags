@@ -1429,11 +1429,13 @@ function! rtags#ReindexFile(arg)
     let symbol = 'ReindexFile' " TODO
     "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [], symbol)
     " mck - async does not work yet
-    call rtags#ExecuteRC({ '-V' : expand("%:p") }, 'PreprocessFile')
     if a:arg != 0
+        call rtags#ExecuteRC({ '--wait -V' : expand("%:p") }, 'PreprocessFile')
         sleep 551m
         redraw!
         echo " "
+    else
+        call rtags#ExecuteRC({ '-V' : expand("%:p") }, 'PreprocessFile')
     endif
 endfunction
 
