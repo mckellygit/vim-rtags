@@ -125,6 +125,9 @@ if g:rtagsUseDefaultMappings == 1
     "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
+    noremap <silent> <Leader>rL <Cmd>$tabnew \| terminal tail -f /tmp/rdm-$USER.log<CR>
+    noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
+
     noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
     noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
     noremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
@@ -1422,20 +1425,31 @@ function! rtags#ReindexFile(arg)
         echo " "
         return
     endif
-    let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
+    if a:arg == 2
+        let rtagscmdmsg = '[vim-rtags] Check index [all]'
+        let symbol = 'Check index [all]' " TODO
+    else
+        let rtagscmdmsg = '[vim-rtags] ReindexFile: ' . expand("%:p")
+        let symbol = 'ReindexFile' " TODO
+    endif
     if a:arg != 0
         echohl Comment | echo rtagscmdmsg | echohl None
     endif
-    let symbol = 'ReindexFile' " TODO
     "call rtags#ExecuteThen({ '-V' : expand("%:p") }, [], symbol)
     " mck - async does not work yet
-    if a:arg != 0
-        call rtags#ExecuteRC({ '--wait -V' : expand("%:p") }, 'PreprocessFile')
+    if a:arg == 2
+        call rtags#ExecuteRC({ '-x' : '' }, 'Check index [all]')
+        sleep 551m
+        redraw!
+        echo " "
+    elseif a:arg == 1
+        call rtags#ExecuteRC({ '--wait -V' : expand("%:p") }, 'ReindexFile')
         sleep 551m
         redraw!
         echo " "
     else
-        call rtags#ExecuteRC({ '-V' : expand("%:p") }, 'PreprocessFile')
+        " TODO: -V or -x here ?
+        call rtags#ExecuteRC({ '-x' : expand("%:p") }, 'ReindexFile')
     endif
 endfunction
 

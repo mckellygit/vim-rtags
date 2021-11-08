@@ -112,7 +112,7 @@ g:rtagsLog
 g:rtagsAutoReindexOnWrite
 
     Default: 0.
-    If set to 1, automatically reindex file on every save/write.
+    If set to 1, automatically index file on every save/write if needed.
 
                                         *g:rtagsUseColonKeyword*
                                         *rtags-variable-use-colon-keyword*
@@ -190,7 +190,15 @@ g:rtagsUseColonKeyword
 
                                                              *rtags-leader-rr*
                                                              *rtags-ReindexFile*
-    <Leader>rr      Trigger current file reindexing by 'rdm'.
+    <Leader>rr      Trigger current file reindexing.
+
+                                                             *rtags-leader-rR*
+                                                             *rtags-Checkindex*
+    <Leader>rR      Trigger reindexing check of entire project.
+
+                                                             *rtags-leader-rL*
+                                                             *rtags-IndexLog*
+    <Leader>rL      Tail index log file in a new tab.
 
                                                              *rtags-leader-rl*
                                                              *rtags-ProjectList*
