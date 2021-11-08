@@ -125,7 +125,7 @@ if g:rtagsUseDefaultMappings == 1
     "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
-    noremap <silent> <Leader>rL <Cmd>$tabnew \| terminal tail -f /tmp/rdm-$USER.log<CR>
+    noremap <silent> <Leader>rL <Cmd>$tabnew \| terminal tail -f /tmp/rdm-$USER.log<CR>G<CR>
     noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
 
     noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
