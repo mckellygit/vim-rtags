@@ -178,6 +178,11 @@ function rtags#QuitIfOnlyHidden(bnum) abort
             let l:doquit = 0
             break
         endif
+
+        if getbufvar(b.bufnr, '&modified')
+            let l:doquit = 0
+            break
+        endif
     endfor
     if l:doquit == 1
         " TODO: is it ok to quit like this ?
