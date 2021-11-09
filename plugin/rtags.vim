@@ -125,7 +125,8 @@ if g:rtagsUseDefaultMappings == 1
     "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
-    noremap <silent> <Leader>rL <Cmd>$tabnew \| terminal tail -f /tmp/rdm-$USER.log<CR>G<CR>
+    noremap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
+
     noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
 
     noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
@@ -149,6 +150,20 @@ if g:rtagsUseDefaultMappings == 1
 endif
 
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' )
+
+function! rtags#TailRDMLog() abort
+    if has("nvim")
+        let tcmd = '$tabnew | terminal tail -f /tmp/rdm-' . $USER . '.log'
+        autocmd TermOpen  term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | se scl=no | call nvim_input('i') | endif
+        autocmd TermClose term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | call nvim_input('<CR>') | endif
+    else
+        let tcmd = '$tabnew | terminal ++close ++norestore ++kill=term ++curwin tail -f /tmp/rdm-' . $USER . '.log'
+    endif
+    execute tcmd
+    if !has("nvim")
+        se scl=no
+    endif
+endfunction
 
 function! rtags#InitPython()
     let s:pyInitScript = "
