@@ -151,11 +151,46 @@ endif
 
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' )
 
+function rtags#QuitIfOnlyHidden(bnum) abort
+    " just to clear the cmdline of this function ...
+    redraw!
+    echo "\r"
+
+    "echom "a:bnum = " . a:bnum
+
+    let l:doquit = 1
+    for b in getbufinfo()
+        "echom "bufnr = " . b.bufnr
+        "echom "bname = " . bufname(b.bufnr)
+        "echom "hidden = " . b.hidden
+        "echom "changd = " . b.changed
+
+        if b.bufnr == a:bnum
+            continue
+        endif
+
+        if !b.hidden
+            let l:doquit = 0
+            break
+        endif
+
+        if b.changed
+            let l:doquit = 0
+            break
+        endif
+    endfor
+    if l:doquit == 1
+        " TODO: is it ok to quit like this ?
+        cquit
+    endif
+endfunction
+
 function! rtags#TailRDMLog() abort
     if has("nvim")
         let tcmd = '$tabnew | terminal tail -f /tmp/rdm-' . $USER . '.log'
         autocmd TermOpen  term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | se scl=no | call nvim_input('i') | endif
         autocmd TermClose term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | call nvim_input('<CR>') | endif
+        autocmd BufDelete term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | call rtags#QuitIfOnlyHidden(bufnr('%')) | endif
     else
         let tcmd = '$tabnew | terminal ++close ++norestore ++kill=term ++curwin tail -f /tmp/rdm-' . $USER . '.log'
     endif
