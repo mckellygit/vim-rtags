@@ -167,19 +167,16 @@ function rtags#QuitIfOnlyHidden(bnum) abort
 
         if b.bufnr == a:bnum
             continue
-        endif
-
-        if !b.hidden
+        elseif !b.hidden
             let l:doquit = 0
             break
-        endif
-
-        if b.changed
+        elseif b.changed
             let l:doquit = 0
             break
-        endif
-
-        if getbufvar(b.bufnr, '&modified')
+        elseif getbufvar(b.bufnr, '&modified')
+            let l:doquit = 0
+            break
+        elseif getbufvar(b.bufnr, '&buftype') ==# 'terminal'
             let l:doquit = 0
             break
         endif
