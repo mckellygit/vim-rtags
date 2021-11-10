@@ -155,17 +155,17 @@ function rtags#QuitIfOnlyHidden(bnum) abort
     " just to clear the cmdline of this function ...
     redraw!
     echo "\r"
-
     "echom "a:bnum = " . a:bnum
-
     let l:doquit = 1
     for b in getbufinfo()
         "echom "bufnr = " . b.bufnr
         "echom "bname = " . bufname(b.bufnr)
         "echom "hidden = " . b.hidden
+        "echom "listed = " . b.listed
         "echom "changd = " . b.changed
-
         if b.bufnr == a:bnum
+            continue
+        elseif empty(bufname(b.bufnr)) && !b.listed
             continue
         elseif !b.hidden
             let l:doquit = 0
@@ -181,6 +181,7 @@ function rtags#QuitIfOnlyHidden(bnum) abort
             break
         endif
     endfor
+    "echom "l:doquit = " . l:doquit
     if l:doquit == 1
         " TODO: is it ok to quit like this ?
         cquit
