@@ -121,6 +121,7 @@ if g:rtagsUseDefaultMappings == 1
     noremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
     "nnoremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
+    noremap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
 
     "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
     noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>

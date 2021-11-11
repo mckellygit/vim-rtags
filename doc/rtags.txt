@@ -188,6 +188,11 @@ g:rtagsUseColonKeyword
                     greater than value of |g:rtagsMinCharsForCommandCompletion|
                     can be autocompleted.
 
+                                                         *rtags-leader-rk*
+                                                         *rtags-FindSymbol-Decl*
+    <Leader>rk      Find declarations/definitions of the symbol under the
+                    cursor.
+
                                                              *rtags-leader-rr*
                                                              *rtags-ReindexFile*
     <Leader>rr      Trigger current file reindexing.
