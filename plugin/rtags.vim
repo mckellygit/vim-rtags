@@ -435,11 +435,13 @@ function! rtags#DisplayLocations(locations, args)
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
         if num_of_locations > 0
+            exe 'ccl'
             exe 'lopen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap | clearjumps
         endif
     else
         call setqflist(a:locations)
         if num_of_locations > 0
+            exe 'lcl'
             exe 'copen '.min([g:rtagsMaxSearchResultWindowHeight, num_of_locations]) | set nowrap | clearjumps
         endif
     endif
