@@ -98,49 +98,61 @@ let s:LOC_OPEN_OPTS = {
             \ }
 
 if g:rtagsUseDefaultMappings == 1
-    noremap <Leader>ri <C-\><C-n>:<C-u>call rtags#SymbolInfo()<CR>
+    noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#SymbolInfo()<CR>
+
+    noremap <Leader>ro <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
+
     noremap <Leader>rj <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    noremap <Leader>rd <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+
     noremap <Leader>rJ <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+    noremap <Leader>rD <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+
+    noremap <Leader>rf <C-\><C-n>:<C-u>call rtags#FindRefs()<CR>
+    noremap <Leader>rF <C-\><C-n>:<C-u>call rtags#FindRefsCallTree()<CR>
+
+    noremap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
+    noremap <Leader>ri <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
+
     "nnoremap <Leader>rS <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
     noremap <Leader>rV <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
     " mck - add rH for Horizontal split
     noremap <Leader>rH <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    " mck - really a tab split if same file
+    noremap <Leader>rX <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB)<CR>
     " mck - to match tmux ...
     noremap <Leader>r\| <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
     noremap <Leader>r_  <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
-    " mck - really a tab split if same file
-    noremap <Leader>rT <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB)<CR>
     " mck - add rt for new tab if diff file
-    noremap <Leader>rt <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
+    noremap <Leader>r<Tab> <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
+
     noremap <Leader>rp <C-\><C-n>:<C-u>call rtags#JumpToParent()<CR>
-    noremap <Leader>rf <C-\><C-n>:<C-u>call rtags#FindRefs()<CR>
-    noremap <Leader>rF <C-\><C-n>:<C-u>call rtags#FindRefsCallTree()<CR>
 
-    " CompleteSymbols can be huge and take too long ...
-    "nnoremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
-    "nnoremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
-    noremap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
-
-    "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
-
-    noremap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
-
-    noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
-
-    noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
-    noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
-    noremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
-    noremap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
     noremap <Leader>rb <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
     noremap <Leader>r, <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
     noremap <Leader>r. <C-\><C-n>:<C-u>call rtags#JumpForward()<CR>
     noremap <Leader>rh <C-\><C-n>:<C-u>call rtags#ShowHierarchy()<CR>
     noremap <Leader>rC <C-\><C-n>:<C-u>call rtags#FindSuperClasses()<CR>
     noremap <Leader>rc <C-\><C-n>:<C-u>call rtags#FindSubClasses()<CR>
-    noremap <Leader>rd <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
+
+    " CompleteSymbols can be huge and take too long ...
+    "nnoremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
+    noremap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
+    "nnoremap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
+    "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
+
+    noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
+    noremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
+
+    noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
+
+    noremap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
+
+    noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
+
     noremap <Leader>r0 <C-\><C-n>:<C-u>call rtags#SuspendIndexing()<CR>
     noremap <Leader>r1 <C-\><C-n>:<C-u>call rtags#ResumeIndexing()<CR>
     noremap <Leader>r: <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
