@@ -780,8 +780,13 @@ function! rtags#JumpToHandler(results, args)
     elseif len(results) == 1 && results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
     elseif len(results) == 1
-        let [location; symbol_detail] = split(results[0], '\s\+')
-        let [jump_file, lnum, col; rest] = split(location, ':')
+        try
+            let [location; symbol_detail] = split(results[0], '\s\+')
+            let [jump_file, lnum, col; rest] = split(location, ':')
+        catch
+            echohl ErrorMsg | echomsg "[vim-rtags] Error: " . results[0] | echohl None
+            return
+        endtry
 
         " mck - new tab if different file and tab split if same file and want new tab
         if !((open_opt == g:SAME_WINDOW) || (open_opt == g:NEW_TAB_IF_DIFF_FILE && jump_file ==# expand("%:p")))
