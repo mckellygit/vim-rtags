@@ -516,6 +516,7 @@ function! rtags#ViewReferences(results, args)
     nmap <buffer> <cr> :call <SID>OpenReference()<cr>
     nmap <buffer> o    :call <SID>ExpandReferences()<cr>
     nmap <buffer> <C-]> <cr>
+    nmap <buffer> <Leader>cc <Leader>qq
     let &cpo = cpo_save
 endfunction
 
@@ -649,6 +650,7 @@ function! rtags#ViewHierarchy(results)
     set cpo&vim
     nmap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
     nmap <buffer> <C-]> <cr>
+    nmap <buffer> <Leader>cc <Leader>qq
     let &cpo = cpo_save
     " mck
     redraw!
