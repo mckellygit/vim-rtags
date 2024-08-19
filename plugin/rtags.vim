@@ -483,7 +483,7 @@ endfunction
 " param[in] results - List of locations, one per line
 "
 " Format of each line: <path>,<line>\s<text>\sfunction: <caller path>
-function! rtags#ViewReferences(results)
+function! rtags#ViewReferences(results, args)
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
@@ -1176,10 +1176,10 @@ function! rtags#HandleResults(job_id, data, event)
         let job_cid = remove(s:jobs, a:job_id)
         let temp_file = rtags#TempFile(job_cid)
         let output = readfile(temp_file)
+        execute 'silent !rm -f ' . temp_file
         let handlers = remove(s:result_handlers, a:job_id)
         let jb_symbol = remove(s:job_args, a:job_id)
         call rtags#ExecuteHandlers(output, handlers, jb_symbol)
-        execute 'silent !rm -f ' . temp_file
     endif
 endfunction
 
