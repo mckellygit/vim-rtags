@@ -98,68 +98,69 @@ let s:LOC_OPEN_OPTS = {
             \ }
 
 if g:rtagsUseDefaultMappings == 1
-    noremap <Leader>rs <C-\><C-n>:<C-u>call rtags#SymbolInfo()<CR>
+    nmap <Leader>rs <C-\><C-n>:<C-u>call rtags#SymbolInfo()<CR>
 
-    noremap <Leader>ro <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
+    nmap <Leader>ro <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
 
-    noremap <Leader>rj <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
-    noremap <Leader>rd <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    nmap <Leader>rj <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    nmap <Leader>rd <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
 
-    noremap <Leader>rJ <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
-    noremap <Leader>rD <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+    nmap <Leader>rJ <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+    nmap <Leader>rD <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
 
-    noremap <Leader>rf <C-\><C-n>:<C-u>call rtags#FindRefs()<CR>
-    noremap <Leader>rF <C-\><C-n>:<C-u>call rtags#FindRefsCallTree()<CR>
+    nmap <Leader>rf <C-\><C-n>:<C-u>call rtags#FindRefs()<CR>
+    nmap <Leader>rF <C-\><C-n>:<C-u>call rtags#FindRefsCallTree()<CR>
 
-    noremap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
-    noremap <Leader>ri <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
+    nmap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
+    nmap <Leader>ri <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
 
-    "nnoremap <Leader>rS <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
-    noremap <Leader>rV <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
+    "nmap <Leader>rS <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>rV <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
     " mck - add rH for Horizontal split
-    noremap <Leader>rH <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>rH <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - really a tab split if same file
-    noremap <Leader>rX <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB)<CR>
+    nmap <Leader>rX <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB)<CR>
     " mck - to match tmux ...
-    noremap <Leader>r\| <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
-    noremap <Leader>r_  <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>r\| <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
+    nmap <Leader>r_  <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - add rt for new tab if diff file
-    noremap <Leader>r<Tab> <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
+    nmap <Leader>r<Tab> <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
 
-    noremap <Leader>rp <C-\><C-n>:<C-u>call rtags#JumpToParent()<CR>
+    nmap <Leader>rp <C-\><C-n>:<C-u>call rtags#JumpToParent()<CR>
 
-    noremap <Leader>rb <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
-    noremap <Leader>r, <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
-    noremap <Leader>r. <C-\><C-n>:<C-u>call rtags#JumpForward()<CR>
-    noremap <Leader>rh <C-\><C-n>:<C-u>call rtags#ShowHierarchy()<CR>
-    noremap <Leader>rC <C-\><C-n>:<C-u>call rtags#FindSuperClasses()<CR>
-    noremap <Leader>rc <C-\><C-n>:<C-u>call rtags#FindSubClasses()<CR>
+    nmap <Leader>rb <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
+    nmap <Leader>r, <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
+    nmap <Leader>r. <C-\><C-n>:<C-u>call rtags#JumpForward()<CR>
+    nmap <Leader>rh <C-\><C-n>:<C-u>call rtags#ShowHierarchy()<CR>
+    nmap <Leader>rC <C-\><C-n>:<C-u>call rtags#FindSuperClasses()<CR>
+    nmap <Leader>rc <C-\><C-n>:<C-u>call rtags#FindSubClasses()<CR>
 
     " CompleteSymbols can be huge and take too long ...
-    "nnoremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
-    noremap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
-    "nnoremap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
-    "nnoremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    noremap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
+    "nmap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
+    nmap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
+    "nmap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
+    "nmap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
-    noremap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
-    noremap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
+    nmap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
+    nmap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
 
-    noremap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
+    nmap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
 
-    noremap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
+    nmap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
 
-    noremap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
+    nmap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
 
-    noremap <Leader>r0 <C-\><C-n>:<C-u>call rtags#SuspendIndexing()<CR>
-    noremap <Leader>r1 <C-\><C-n>:<C-u>call rtags#ResumeIndexing()<CR>
-    noremap <Leader>r: <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
+    nmap <Leader>r0 <C-\><C-n>:<C-u>call rtags#SuspendIndexing()<CR>
+    nmap <Leader>r1 <C-\><C-n>:<C-u>call rtags#ResumeIndexing()<CR>
+    nmap <Leader>r: <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
 
     " NOTE: also suggest these mappings:
-    "nnoremap <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
-    "autocmd BufReadPost quickfix nnoremap <silent> <buffer> <C-]> <Return>
+    "nmap <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    "vmap <C-]> <Nop>
+    "autocmd BufReadPost quickfix nmap <silent> <buffer> <C-]> <Return>
 endif
 
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' )
@@ -490,6 +491,9 @@ function! rtags#ViewReferences(results, args)
     endif
     let cmd = g:rtagsMaxSearchResultWindowHeight . "new References"
     silent execute cmd
+
+    " TODO - add these lines to a quickfix window instead of a split window ...
+
     setlocal noswapfile
     setlocal buftype=nowrite
     setlocal bufhidden=delete
@@ -509,8 +513,9 @@ function! rtags#ViewReferences(results, args)
 
     let cpo_save = &cpo
     set cpo&vim
-    nnoremap <buffer> <cr> :call <SID>OpenReference()<cr>
-    nnoremap <buffer> o    :call <SID>ExpandReferences()<cr>
+    nmap <buffer> <cr> :call <SID>OpenReference()<cr>
+    nmap <buffer> o    :call <SID>ExpandReferences()<cr>
+    nmap <buffer> <C-]> <cr>
     let &cpo = cpo_save
 endfunction
 
@@ -621,6 +626,9 @@ function! rtags#ViewHierarchy(results)
     endif
     let cmd = g:rtagsMaxSearchResultWindowHeight . "new Hierarchy"
     silent execute cmd
+
+    " TODO - add these lines to a quickfix window instead of a split window ...
+
     setlocal noswapfile
     setlocal buftype=nowrite
     setlocal bufhidden=delete
@@ -639,7 +647,8 @@ function! rtags#ViewHierarchy(results)
 
     let cpo_save = &cpo
     set cpo&vim
-    nnoremap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
+    nmap <buffer> <cr> :call <SID>OpenHierarchyLocation()<cr>
+    nmap <buffer> <C-]> <cr>
     let &cpo = cpo_save
     " mck
     redraw!
