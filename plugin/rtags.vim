@@ -480,6 +480,7 @@ function! rtags#DisplayLocations(locations, args)
     endif
 
     if exists('g:rtagsUseFzf') && (g:rtagsUseFzf > 0)
+
         let l:fzflist = []
         for k in a:locations
             let ln = k.filename . ':' . k.lnum . ':' . k.col . ':' . k.text
@@ -489,14 +490,29 @@ function! rtags#DisplayLocations(locations, args)
         redraw!
         echo " "
 
-        call fzf#run(fzf#wrap({
+        if exists('$TMUX_PANE')
+
+            call fzf#run(fzf#wrap({
                 \  'source' : l:fzflist,
                 \  'sink*'  : function('s:myopen'),
-                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--nth', '4..', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
                 \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
                 \  }))
 
+        else
+
+            " use vim popup ...
+            call fzf#run(fzf#wrap({
+                \  'source' : l:fzflist,
+                \  'sink*'  : function('s:myopen'),
+                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                \  'window' : { 'width': 0.9, 'height': 0.8, 'yoffset': 0.5, 'xoffset': 0.5 }
+                \  }))
+
+        endif
+
         return
+
     endif
 
     if g:rtagsUseLocationList == 1
