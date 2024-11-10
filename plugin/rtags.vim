@@ -272,7 +272,8 @@ function! rtags#ExecuteRC(args, cmdinfo)
     endfor
 
     let cmd1 = cmd
-    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
+    "let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort"'
     let cmd = cmd2
 
     silent let output = system(cmd)
@@ -415,6 +416,38 @@ function! rtags#ExtractSubClasses(results, symbol)
     return extracted
 endfunction
 
+function! s:getlines(line)
+    let parts = split(a:line, ':')
+    return {'filename': parts[0], 'lnum': parts[1], 'col': parts[2],
+          \ 'text': join(parts[3:], ':')}
+endfunction
+
+function s:myopen(lines)
+    " if we have sink* then this is the whole list, with sink its just what is selected
+    " ['file.cpp:1690:21:symbol(arg1, arg2);']
+    "let l = split(a:e[0], ':')
+    " l[0] is filename
+    " l[1] is line number
+    " l[2] is column number
+    " l[3] is text
+    "execute 'tabedit +' . l[1] . ' ' . l[0]
+    if len(a:lines) < 2
+        return
+    endif
+
+    let cmd = get({'ctrl-x': 'split',
+                 \ 'ctrl-v': 'vertical split',
+                 \ 'ctrl-t': 'tabe'}, a:lines[0], 'e')
+
+    let list = map(a:lines[1:], 's:getlines(v:val)')
+
+    let first = list[0]
+
+    execute cmd escape(first.filename, ' %#\')
+    execute first.lnum
+    execute 'normal!' first.col.'|zz'
+endfunction
+
 "
 " param[in] locations - List of locations, one per line
 "
@@ -445,6 +478,25 @@ function! rtags#DisplayLocations(locations, args)
             return
         endif
     endif
+
+    if exists('g:rtagsUseFzf') && (g:rtagsUseFzf > 0)
+        let l:fzflist = []
+        for k in a:locations
+            let ln = k.filename . ':' . k.lnum . ':' . k.col . ':' . k.text
+            call add(l:fzflist, ln)
+        endfor
+
+        call fzf#run(fzf#wrap({
+                \  'source' : l:fzflist,
+                \  'sink*'  : function('s:myopen'),
+                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--nth', '4..', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
+                \  }))
+        redraw!
+        echo " "
+        return
+    endif
+
     if g:rtagsUseLocationList == 1
         call setloclist(winnr(), a:locations)
         if num_of_locations > 0
@@ -1104,7 +1156,8 @@ function! rtags#ExecuteRCAsync(args, handlers, symbol)
         endif
     endfor
 
-    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
+    "let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort | head -n 500"'
+    let cmd2 = '/bin/bash -c "' . cmd . ' 2>&1 | sort"'
     let cmd = cmd2
 
     let s:job_cid = s:job_cid + 1
