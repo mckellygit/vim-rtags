@@ -486,14 +486,16 @@ function! rtags#DisplayLocations(locations, args)
             call add(l:fzflist, ln)
         endfor
 
+        redraw!
+        echo " "
+
         call fzf#run(fzf#wrap({
                 \  'source' : l:fzflist,
                 \  'sink*'  : function('s:myopen'),
                 \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--nth', '4..', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
                 \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
                 \  }))
-        redraw!
-        echo " "
+
         return
     endif
 
