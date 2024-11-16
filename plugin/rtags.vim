@@ -98,67 +98,67 @@ let s:LOC_OPEN_OPTS = {
             \ }
 
 if g:rtagsUseDefaultMappings == 1
-    nmap <Leader>rs <C-\><C-n>:<C-u>call rtags#SymbolInfo()<CR>
+    nmap <Leader>rs <Cmd>call rtags#SymbolInfo()<CR>
 
-    nmap <Leader>ro <C-\><C-n>:<C-u>call rtags#Diagnostics()<CR>
+    nmap <Leader>ro <Cmd>call rtags#Diagnostics()<CR>
 
-    nmap <Leader>rj <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
-    nmap <Leader>rd <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    nmap <Leader>rj <Cmd>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    nmap <Leader>rd <Cmd>call rtags#JumpTo(g:SAME_WINDOW)<CR>
 
-    nmap <Leader>rJ <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
-    nmap <Leader>rD <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+    nmap <Leader>rJ <Cmd>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
+    nmap <Leader>rD <Cmd>call rtags#JumpTo(g:SAME_WINDOW, { '--declaration-only' : '' })<CR>
 
-    nmap <Leader>rf <C-\><C-n>:<C-u>call rtags#FindRefs()<CR>
-    nmap <Leader>rF <C-\><C-n>:<C-u>call rtags#FindRefsCallTree()<CR>
+    nmap <Leader>rf <Cmd>call rtags#FindRefs()<CR>
+    nmap <Leader>rF <Cmd>call rtags#FindRefsCallTree()<CR>
 
-    nmap <Leader>rv <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
-    nmap <Leader>ri <C-\><C-n>:<C-u>call rtags#FindVirtuals()<CR>
+    nmap <Leader>rv <Cmd>call rtags#FindVirtuals()<CR>
+    nmap <Leader>ri <Cmd>call rtags#FindVirtuals()<CR>
 
-    "nmap <Leader>rS <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
-    nmap <Leader>rV <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
+    "nmap <Leader>rS <Cmd>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>rV <Cmd>call rtags#JumpTo(g:V_SPLIT)<CR>
     " mck - add rH for Horizontal split
-    nmap <Leader>rH <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>rH <Cmd>call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - really a tab split if same file
-    nmap <Leader>rX <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB)<CR>
+    nmap <Leader>rX <Cmd>call rtags#JumpTo(g:NEW_TAB)<CR>
     " mck - to match tmux ...
-    nmap <Leader>r\| <C-\><C-n>:<C-u>call rtags#JumpTo(g:V_SPLIT)<CR>
-    nmap <Leader>r_  <C-\><C-n>:<C-u>call rtags#JumpTo(g:H_SPLIT)<CR>
+    nmap <Leader>r\| <Cmd>call rtags#JumpTo(g:V_SPLIT)<CR>
+    nmap <Leader>r_  <Cmd>call rtags#JumpTo(g:H_SPLIT)<CR>
     " mck - add rt for new tab if diff file
-    nmap <Leader>r<Tab> <C-\><C-n>:<C-u>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
+    nmap <Leader>r<Tab> <Cmd>call rtags#JumpTo(g:NEW_TAB_IF_DIFF_FILE)<CR>
 
-    nmap <Leader>rp <C-\><C-n>:<C-u>call rtags#JumpToParent()<CR>
+    nmap <Leader>rp <Cmd>call rtags#JumpToParent()<CR>
 
-    nmap <Leader>rb <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
-    nmap <Leader>r, <C-\><C-n>:<C-u>call rtags#JumpBack()<CR>
-    nmap <Leader>r. <C-\><C-n>:<C-u>call rtags#JumpForward()<CR>
-    nmap <Leader>rh <C-\><C-n>:<C-u>call rtags#ShowHierarchy()<CR>
-    nmap <Leader>rC <C-\><C-n>:<C-u>call rtags#FindSuperClasses()<CR>
-    nmap <Leader>rc <C-\><C-n>:<C-u>call rtags#FindSubClasses()<CR>
+    nmap <Leader>rb <Cmd>call rtags#JumpBack()<CR>
+    nmap <Leader>r, <Cmd>call rtags#JumpBack()<CR>
+    nmap <Leader>r. <Cmd>call rtags#JumpForward()<CR>
+    nmap <Leader>rh <Cmd>call rtags#ShowHierarchy()<CR>
+    nmap <Leader>rC <Cmd>call rtags#FindSuperClasses()<CR>
+    nmap <Leader>rc <Cmd>call rtags#FindSubClasses()<CR>
 
     " CompleteSymbols can be huge and take too long ...
-    "nmap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    nmap <Leader>rn <C-\><C-n>:<C-u>call rtags#FindRefsByName(input("Pattern? "))<CR>
-    nmap <Leader>rk <C-\><C-n>:<C-u>call rtags#FindSymbolsOfWordUnderCursor()<CR>
-    "nmap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    nmap <Leader>rK <C-\><C-n>:<C-u>call rtags#FindSymbols(input("Pattern? "))<CR>
-    "nmap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
-    nmap <Leader>rm <C-\><C-n>:<C-u>call rtags#JumpToMethod(input("Pattern? "))<CR>
+    "nmap <Leader>rn <Cmd>call rtags#FindRefsByName(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rn <Cmd>call rtags#FindRefsByName(input("Pattern? "))<CR>
+    nmap <Leader>rk <Cmd>call rtags#FindSymbolsOfWordUnderCursor()<CR>
+    "nmap <Leader>rK <Cmd>call rtags#FindSymbols(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rK <Cmd>call rtags#FindSymbols(input("Pattern? "))<CR>
+    "nmap <Leader>rm <Cmd>call rtags#JumpToMethod(input("Pattern? ", "", "customlist,rtags#CompleteSymbols"))<CR>
+    nmap <Leader>rm <Cmd>call rtags#JumpToMethod(input("Pattern? "))<CR>
 
-    nmap <Leader>rl <C-\><C-n>:<C-u>call rtags#ProjectList()<CR>
-    nmap <Leader>rw <C-\><C-n>:<C-u>call rtags#RenameSymbolUnderCursor()<CR>
+    nmap <Leader>rl <Cmd>call rtags#ProjectList()<CR>
+    nmap <Leader>rw <Cmd>call rtags#RenameSymbolUnderCursor()<CR>
 
-    nmap <silent> <Leader>rr <C-\><C-n>:<C-u>call rtags#ReindexFile(1)<CR>
+    nmap <silent> <Leader>rr <Cmd>call rtags#ReindexFile(1)<CR>
 
     nmap <silent> <Leader>rL <Cmd>call rtags#TailRDMLog()<CR>
 
     nmap <silent> <Leader>rR <Cmd>call rtags#ReindexFile(2)<CR>
 
-    nmap <Leader>r0 <C-\><C-n>:<C-u>call rtags#SuspendIndexing()<CR>
-    nmap <Leader>r1 <C-\><C-n>:<C-u>call rtags#ResumeIndexing()<CR>
-    nmap <Leader>r: <C-\><C-n>:<C-u>call rtags#ToggleColonKeyword()<CR>
+    nmap <Leader>r0 <Cmd>call rtags#SuspendIndexing()<CR>
+    nmap <Leader>r1 <Cmd>call rtags#ResumeIndexing()<CR>
+    nmap <Leader>r: <Cmd>call rtags#ToggleColonKeyword()<CR>
 
     " NOTE: also suggest these mappings:
-    "nmap <C-]> <C-\><C-n>:<C-u>call rtags#JumpTo(g:SAME_WINDOW)<CR>
+    "nmap <C-]> <Cmd>call rtags#JumpTo(g:SAME_WINDOW)<CR>
     "vmap <C-]> <Nop>
     "autocmd BufReadPost quickfix nmap <silent> <buffer> <C-]> <Return>
 endif
