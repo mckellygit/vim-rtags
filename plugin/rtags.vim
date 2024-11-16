@@ -490,7 +490,7 @@ function! rtags#DisplayLocations(locations, args)
         redraw!
         echo " "
 
-        if exists('$TMUX_PANE')
+        if exists('$TMUX_PANE_XXX')
 
             call fzf#run(fzf#wrap({
                 \  'source' : l:fzflist,
