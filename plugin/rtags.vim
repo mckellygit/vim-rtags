@@ -690,7 +690,7 @@ endfunction
 "
 " Hierarchy references have format: <type> <name> <file>:<line>:<col>: <text>
 "
-function! rtags#ViewHierarchy(results)
+function! rtags#ViewHierarchy(results, args)
     if len(a:results) == 1 && a:results[0] ==# 'Not indexed'
         echohl ErrorMsg | echomsg "[vim-rtags] Current file is not indexed!" | echohl None
         return
