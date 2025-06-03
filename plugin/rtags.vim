@@ -78,7 +78,7 @@ if g:rtagsAutoLaunchRdm
         let chkcmd = 'pgrep --exact ' . g:rtagsRdmCmd
         let chkpid = system(chkcmd)
         if empty(chkpid)
-            silent call system("setsid " . g:rtagsRdmCmd . " --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon")
+            silent call system("setsid " . g:rtagsRdmCmd . " --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon --job-count \$MAKECPUS")
         endif
     endif
 end
