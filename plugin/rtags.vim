@@ -892,10 +892,71 @@ function! rtags#JumpToHandler(results, args)
             endif
         endif
     else
+        " len(results) == 0
         if empty(symbol)
             let symbol = '<unable to determine symbol>'
+            echohl DiffText | echomsg "[vim-rtags] No addl loc info for: " . symbol | echohl None
+            return
         endif
-        echohl DiffText | echomsg "[vim-rtags] No addl loc info for: " . symbol | echohl None
+
+        " --------------------------
+        " try getting symbol info and finding and guess a decent entry to go to from that ...
+
+        let args = {
+                \ '-a' : '',
+                \ '-F' : symbol }
+        let eresult = rtags#ExecuteRC(args, symbol)
+
+        let newloc = ''
+        let ii = 0
+        for item in eresult
+            " if it ends in a ) or it does not end in a ; then perhaps its the best guess ...
+            if (item[-1:] == ')') || (item[-1:] != ';')
+                let newloc = item
+                break
+            endif
+            let ii = ii + 1
+        endfor
+
+        if empty(newloc)
+            "TODO: could try another best guess entry in eresult ...
+            echohl DiffText | echomsg "[vim-rtags] No addl loc info for: " . symbol | echohl None
+            return
+        endif
+
+        try
+            let [location; symbol_detail] = split(eresult[ii], '\s\+')
+            let [jump_file, lnum, col; rest] = split(location, ':')
+        catch
+            echohl ErrorMsg | echomsg "[vim-rtags] Error: " . eresult[ii] | echohl None
+            return
+        endtry
+
+        "echom "newloc = " . ii . " " . jump_file . " " . lnum . " " . col
+
+        " mck - new tab if different file and tab split if same file and want new tab
+        if !((open_opt == g:SAME_WINDOW) || (open_opt == g:NEW_TAB_IF_DIFF_FILE && jump_file ==# expand("%:p")))
+            if open_opt == g:NEW_TAB && jump_file ==# expand("%:p")
+                exec "tab split"
+            else
+                call rtags#cloneCurrentBuffer(open_opt)
+            endif
+        endif
+        " mck - new tab if different file and tab split if same file and want new tab
+
+        if skipjump != 'y'
+            " Add location to the jumplist
+            normal! m'
+        endif
+
+        if rtags#jumpToLocation(jump_file, lnum, col)
+            if skipjump != 'y'
+                normal! zz
+            else
+                keepjumps normal! zz
+            endif
+        endif
+        " --------------------------
     endif
 endfunction
 
