@@ -490,12 +490,14 @@ function! rtags#DisplayLocations(locations, args)
         redraw!
         echo " "
 
+        " add ctrl-o to end rtags window like we are going back ...
+
         if exists('$TMUX_PANE_XXX')
 
             call fzf#run(fzf#wrap({
                 \  'source' : l:fzflist,
                 \  'sink*'  : function('s:myopen'),
-                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
+                \  'options': ['--bind=esc:ignore', '--bind=ctrl-o:abort', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
                 \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
                 \  }))
 
@@ -505,7 +507,7 @@ function! rtags#DisplayLocations(locations, args)
             call fzf#run(fzf#wrap({
                 \  'source' : l:fzflist,
                 \  'sink*'  : function('s:myopen'),
-                \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
+                \  'options': ['--bind=esc:ignore', '--bind=ctrl-o:abort', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
                 \  'window' : { 'width': 0.9, 'height': 0.8, 'yoffset': 0.5, 'xoffset': 0.5 }
                 \  }))
 
@@ -827,7 +829,18 @@ endfunction
 
 function! rtags#jumpToLocation(file, line, col)
     call rtags#saveLocation()
-    return rtags#jumpToLocationInternal(a:file, a:line, a:col)
+    let [lnum, col] = getpos('.')[1:2]
+    let jump_file = expand("%:p")
+    if rtags#jumpToLocationInternal(a:file, a:line, a:col)
+        let [lnum2, col2] = getpos('.')[1:2]
+        let jump_file2 = expand("%:p")
+        if (jump_file == jump_file2) && (lnum == lnum2)
+            return 0
+        else
+            return 1
+        endif
+    endif
+    return 0
 endfunction
 
 function! rtags#jumpToLocationInternal(file, line, col)
