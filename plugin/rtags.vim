@@ -79,6 +79,11 @@ endif
 let g:rdmdir = hdir . "/.local/share"
 let g:rdmlog = hdir . "/.local/share/rdm-" . user . ".log"
 
+if !isdirectory(g:rdmdir)
+    echohl DiffDelete | echomsg "[vim-rtags] dir: " . g:rdmdir . " does not exist" | echohl None
+    finish
+endif
+
 if g:rtagsAutoLaunchRdm
     "silent call system(g:rtagsRcCmd." -w")
     "if v:shell_error != 0
