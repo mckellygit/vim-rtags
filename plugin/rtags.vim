@@ -68,6 +68,17 @@ if !exists("g:rtagsUseColonKeyword")
     let g:rtagsUseColonKeyword = 0
 endif
 
+let hdir = $HOME
+let user = $USER
+
+if empty(hdir) || empty(user)
+    echohl DiffDelete | echomsg "[vim-rtags] unable to determine $HOME or $USER" | echohl None
+    finish
+endif
+
+let g:rdmdir = hdir . "/.local/share"
+let g:rdmlog = hdir . "/.local/share/rdm-" . user . ".log"
+
 if g:rtagsAutoLaunchRdm
     "silent call system(g:rtagsRcCmd." -w")
     "if v:shell_error != 0
@@ -78,7 +89,8 @@ if g:rtagsAutoLaunchRdm
         let chkcmd = 'pgrep --exact ' . g:rtagsRdmCmd
         let chkpid = system(chkcmd)
         if empty(chkpid)
-            silent call system("setsid " . g:rtagsRdmCmd . " --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon --job-count \$MAKECPUS")
+            "silent call system("setsid " . g:rtagsRdmCmd . " --tempdir /tmp/rdm-".$USER." --log-file /tmp/rdm-".$USER.".log --daemon --job-count \$MAKECPUS")
+            silent call system("setsid " . g:rtagsRdmCmd . " --tempdir " . g:rdmdir . " --log-file " . g:rdmlog . " --daemon --job-count \$MAKECPUS")
         endif
     endif
 end
@@ -171,6 +183,7 @@ function rtags#QuitIfOnlyHidden(bnum) abort
     echo "\r"
     "echom "a:bnum = " . a:bnum
     let l:doquit = 1
+    let l:maybequit = 0
     for b in getbufinfo()
         "echom "bufnr = " . b.bufnr
         "echom "bname = " . bufname(b.bufnr)
@@ -180,6 +193,7 @@ function rtags#QuitIfOnlyHidden(bnum) abort
         if b.bufnr == a:bnum
             continue
         elseif empty(bufname(b.bufnr)) && !b.listed
+            let l:maybequit = 1
             continue
         elseif !b.hidden
             let l:doquit = 0
@@ -200,16 +214,35 @@ function rtags#QuitIfOnlyHidden(bnum) abort
         " TODO: is it ok to quit like this ?
         cquit
     endif
+    "NOTE: all this extra logic just to deal with startify window ...
+    if l:maybequit
+        let l:maybequit = 0
+        for b in getbufinfo()
+            if empty(bufname(b.bufnr)) && !b.listed
+                let l:maybequit += 1
+            elseif empty(bufname(b.bufnr)) && b.listed
+                let l:maybequit += 1
+            elseif b.bufnr != a:bnum
+                let l:maybequit = 0
+                break
+            endif
+        endfor
+        if l:maybequit == 2
+            " ok because this is only called on nvim ...
+            call nvim_input('\qq')
+        endif
+    endif
 endfunction
 
 function! rtags#TailRDMLog() abort
     if has("nvim")
-        let tcmd = '$tabnew | terminal tail -f /tmp/rdm-' . $USER . '.log'
-        autocmd TermOpen  term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | se scl=no | call nvim_input('i') | endif
-        autocmd TermClose term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | call nvim_input('<CR>') | endif
-        autocmd BufDelete term://* if (expand('<afile>') =~ ":tail -f /tmp/rdm-") | call rtags#QuitIfOnlyHidden(bufnr('%')) | endif
+        let tcmd = '$tabnew | terminal tail -f ' . g:rdmlog
+        let g:tailstr = ":tail -f " . g:rdmlog
+        autocmd TermOpen  term://* if (expand('<afile>') =~ g:tailstr) | se scl=no | call nvim_input('i') | endif
+        autocmd TermClose term://* if (expand('<afile>') =~ g:tailstr) | call nvim_input('<CR>') | endif
+        autocmd BufDelete term://* if (expand('<afile>') =~ g:tailstr) | call rtags#QuitIfOnlyHidden(bufnr('%')) | endif
     else
-        let tcmd = '$tabnew | terminal ++close ++norestore ++kill=term ++curwin tail -f /tmp/rdm-' . $USER . '.log'
+        let tcmd = '$tabnew | terminal ++close ++norestore ++kill=term ++curwin tail -f ' . g:rdmlog
     endif
     execute tcmd
     if !has("nvim")
